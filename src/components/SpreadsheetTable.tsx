@@ -26,6 +26,13 @@ export default function SpreadsheetTable({
   const [nowMs, setNowMs] = useState<number>(Date.now())
   const [editingTracker, setEditingTracker] = useState<LimitTracker | null>(null)
   const [isAddOpen, setIsAddOpen] = useState(false)
+  const [resetToast, setResetToast] = useState(false)
+
+  function handleReset() {
+    onReset()
+    setResetToast(true)
+    setTimeout(() => setResetToast(false), 2500)
+  }
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -153,7 +160,7 @@ export default function SpreadsheetTable({
           </button>
 
           <button
-            onClick={() => { if (confirm('Reset table rows back to default accounts?')) onReset() }}
+            onClick={handleReset}
             title="Reset to default accounts"
             className="p-2 rounded-xl transition-all"
             style={{
@@ -358,6 +365,25 @@ export default function SpreadsheetTable({
           </tbody>
         </table>
       </div>
+
+      {/* In-page toast — no browser popup */}
+      {resetToast && (
+        <div
+          className="fixed bottom-6 left-1/2 z-50 flex items-center gap-2 px-5 py-3 rounded-2xl text-sm font-medium text-white transition-all"
+          style={{
+            transform: 'translateX(-50%)',
+            background: 'rgba(16,185,129,0.25)',
+            backdropFilter: 'blur(24px)',
+            WebkitBackdropFilter: 'blur(24px)',
+            border: '1px solid rgba(52,211,153,0.35)',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+            fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif",
+          }}
+        >
+          <span style={{ color: '#6ee7b7' }}>✓</span>
+          Table refreshed to default accounts
+        </div>
+      )}
 
       {/* Footer */}
       <div className="relative z-10 w-full max-w-6xl mt-4 flex flex-wrap items-center justify-between text-xs px-1" style={{ color: 'rgba(255,255,255,0.35)' }}>
