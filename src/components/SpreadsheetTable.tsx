@@ -137,6 +137,9 @@ export default function SpreadsheetTable({
           {/* Table Header matching user's red banner */}
           <thead>
             <tr className="bg-[#e60000] text-black font-extrabold text-center border-b-2 border-black">
+              <th className="py-3 px-2 border-r border-black tracking-tight w-10">
+                Sl No
+              </th>
               <th className="py-3 px-3 sm:px-4 border-r border-black tracking-tight">
                 Email ID
               </th>
@@ -164,7 +167,7 @@ export default function SpreadsheetTable({
 
           {/* Table Rows matching user's yellow and green cells */}
           <tbody>
-            {trackers.map((t) => {
+            {trackers.map((t, index) => {
               const geminiRemaining = calculateRemainingTime(
                 t.gemini_status,
                 t.gemini_reset_at,
@@ -184,6 +187,11 @@ export default function SpreadsheetTable({
                   key={t.id}
                   className="border-b border-black text-center font-medium hover:brightness-95 transition-all group"
                 >
+                  {/* Column 0: Sl No */}
+                  <td className="py-2.5 px-2 border-r border-black bg-[#e60000] text-black font-bold text-center w-10">
+                    {index + 1}
+                  </td>
+
                   {/* Column 1: Email ID (Yellow) */}
                   <td className="py-2.5 px-3 border-r border-black bg-[#ffff00] text-black font-semibold text-left sm:text-center truncate max-w-[180px]">
                     {t.label}
