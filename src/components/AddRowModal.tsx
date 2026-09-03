@@ -26,35 +26,41 @@ export default function AddRowModal({ onAdd, onClose }: AddRowModalProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="relative w-full max-w-sm rounded-xl border border-gray-700 bg-gray-900 shadow-2xl p-5 text-gray-100">
-        <div className="flex items-center justify-between pb-3 border-b border-gray-800">
+      <div
+        className="relative w-full max-w-sm rounded-2xl border border-white/15 bg-slate-900/95 shadow-2xl p-5 text-slate-100"
+        style={{
+          backdropFilter: 'blur(40px)',
+          fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif",
+        }}
+      >
+        <div className="flex items-center justify-between pb-3 border-b border-white/10">
           <h3 className="text-base font-bold text-white">Add New Email Account</h3>
           <button
             onClick={onClose}
-            className="p-1 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800"
+            className="p-1.5 rounded-lg text-white/40 hover:text-white hover:bg-white/10 transition-colors"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+        <form onSubmit={handleSubmit} className="space-y-4 mt-4 text-xs sm:text-sm">
           <div>
-            <label className="block text-xs font-semibold text-gray-300 mb-1">
+            <label className="block text-xs font-semibold text-white/80 mb-1">
               Email ID
             </label>
             <input
               type="text"
-              placeholder="e.g. vasudevan123"
-              className="w-full rounded-lg border border-gray-700 bg-gray-800 px-3 py-2 text-sm text-white focus:border-sky-500 focus:outline-none"
+              placeholder="e.g. vasudevan123@gmail.com"
+              className="w-full rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-xs sm:text-sm text-white focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
               value={label}
               onChange={(e) => setLabel(e.target.value)}
               required
               autoFocus
             />
-            <p className="text-[11px] text-gray-400 mt-1">
+            <p className="text-[11px] text-white/40 mt-1">
               Will start with both Gemini and Claude as Available.
             </p>
           </div>
@@ -63,13 +69,13 @@ export default function AddRowModal({ onAdd, onClose }: AddRowModalProps) {
             <button
               type="button"
               onClick={onClose}
-              className="px-3 py-1.5 text-xs text-gray-300 hover:bg-gray-800 rounded-lg"
+              className="px-3.5 py-1.5 text-xs text-white/60 hover:text-white hover:bg-white/10 rounded-xl transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-1.5 text-xs font-bold text-white bg-sky-600 hover:bg-sky-500 rounded-lg flex items-center gap-1"
+              className="px-4 py-1.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl flex items-center gap-1.5 shadow-lg transition-all"
             >
               <Plus className="w-3.5 h-3.5" />
               Add Row
