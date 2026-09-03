@@ -3,7 +3,7 @@ import { supabase, isSupabaseConfigured } from '../lib/supabase'
 import type { LimitTracker, NewTracker, UpdateTracker } from '../types/tracker'
 import { DEFAULT_TRACKERS } from '../data/defaultTrackers'
 
-const STORAGE_KEY = 'ai_limit_trackers_v1'
+const STORAGE_KEY = 'ai_limit_trackers_v2'
 
 function getInitialTrackers(): LimitTracker[] {
   try {

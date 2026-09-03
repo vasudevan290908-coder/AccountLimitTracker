@@ -3,7 +3,7 @@ import type { LimitTracker } from '../types/tracker'
 export const DEFAULT_TRACKERS: LimitTracker[] = [
   {
     id: 'row-1',
-    label: 'vasudevanvsvasu02',
+    label: 'vasudevanvsvasu02@gmail.com',
     gemini_status: 'available',
     gemini_reset_at: null,
     claude_status: 'available',
@@ -12,7 +12,7 @@ export const DEFAULT_TRACKERS: LimitTracker[] = [
   },
   {
     id: 'row-2',
-    label: 'vasudevanvs290908',
+    label: 'vasudevanvs290908@gmail.com',
     gemini_status: 'available',
     gemini_reset_at: null,
     claude_status: 'available',
@@ -21,7 +21,7 @@ export const DEFAULT_TRACKERS: LimitTracker[] = [
   },
   {
     id: 'row-3',
-    label: 'vasuvsvasudevan',
+    label: 'vasuvsvasudevan@gmail.com',
     gemini_status: 'available',
     gemini_reset_at: null,
     claude_status: 'available',
@@ -30,7 +30,7 @@ export const DEFAULT_TRACKERS: LimitTracker[] = [
   },
   {
     id: 'row-4',
-    label: 'vasudevanvasu0908',
+    label: 'vasudevanvasu0908@gmail.com',
     gemini_status: 'limited',
     gemini_reset_at: '2026-09-07T02:30:00',
     claude_status: 'available',
@@ -39,7 +39,7 @@ export const DEFAULT_TRACKERS: LimitTracker[] = [
   },
   {
     id: 'row-5',
-    label: 'vsvsvs2909',
+    label: 'vsvsvs2909@gmail.com',
     gemini_status: 'limited',
     gemini_reset_at: '2026-09-07T17:30:00',
     claude_status: 'limited',
@@ -48,16 +48,16 @@ export const DEFAULT_TRACKERS: LimitTracker[] = [
   },
   {
     id: 'row-6',
-    label: 'vasudevan020202',
+    label: 'vasudevan020202@gmail.com',
     gemini_status: 'limited',
-    gemini_reset_at: '2026-09-03T09:21:00',
+    gemini_reset_at: '2026-09-10T09:21:00',
     claude_status: 'limited',
-    claude_reset_at: '2026-09-03T13:31:00',
+    claude_reset_at: '2026-09-10T13:31:00',
     sort_order: 6,
   },
   {
     id: 'row-7',
-    label: 'dadaworldcup06',
+    label: 'dadaworldcup06@gmail.com',
     gemini_status: 'limited',
     gemini_reset_at: '2026-09-08T02:30:00',
     claude_status: 'limited',
@@ -66,7 +66,7 @@ export const DEFAULT_TRACKERS: LimitTracker[] = [
   },
   {
     id: 'row-8',
-    label: 'gb200809',
+    label: 'gb200809@gmail.com',
     gemini_status: 'available',
     gemini_reset_at: null,
     claude_status: 'available',
@@ -75,7 +75,7 @@ export const DEFAULT_TRACKERS: LimitTracker[] = [
   },
   {
     id: 'row-9',
-    label: 'vsvasudevanvasu02',
+    label: 'vsvasudevanvasu02@gmail.com',
     gemini_status: 'available',
     gemini_reset_at: null,
     claude_status: 'available',
@@ -84,7 +84,7 @@ export const DEFAULT_TRACKERS: LimitTracker[] = [
   },
   {
     id: 'row-10',
-    label: 'vasudevanvasuvs02',
+    label: 'vasudevanvasuvs02@gmail.com',
     gemini_status: 'available',
     gemini_reset_at: null,
     claude_status: 'available',
