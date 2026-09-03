@@ -8,7 +8,6 @@ import AddRowModal from './AddRowModal'
 
 interface SpreadsheetTableProps {
   trackers: LimitTracker[]
-  isLiveSync: boolean
   onAdd: (data: NewTracker) => void
   onUpdate: (id: string, data: UpdateTracker) => void
   onDelete: (id: string) => void
@@ -159,13 +158,13 @@ export default function SpreadsheetTable({
                   Gemini Time Limit
                 </th>
                 <th className="py-3 px-3 sm:px-4 border-r border-white/[0.04] text-center text-[#cbd5e1]">
-                  Cloaud Time Limit
+                  Claude Time Limit
                 </th>
                 <th className="py-3 px-3 sm:px-4 border-r border-white/[0.04] text-center text-[#cbd5e1]">
                   Real Time Limit Of Gemini
                 </th>
                 <th className="py-3 px-3 sm:px-4 text-center text-[#cbd5e1]">
-                  Real Time Limit Of Cloaud
+                  Real Time Limit Of Claude
                 </th>
               </tr>
             </thead>

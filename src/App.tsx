@@ -5,7 +5,6 @@ import SpreadsheetTable from './components/SpreadsheetTable'
 export default function App() {
   const {
     trackers,
-    isLiveSync,
     addTracker,
     updateTracker,
     deleteTracker,
@@ -16,7 +15,6 @@ export default function App() {
     <>
       <SpreadsheetTable
         trackers={trackers}
-        isLiveSync={isLiveSync}
         onAdd={addTracker}
         onUpdate={updateTracker}
         onDelete={deleteTracker}

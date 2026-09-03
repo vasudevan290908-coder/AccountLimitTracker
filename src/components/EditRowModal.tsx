@@ -243,7 +243,7 @@ export default function EditRowModal({
           <div className="rounded-xl border border-white/[0.05] bg-white/[0.015] p-3.5 space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-xs sm:text-sm font-medium text-[#f1f5f9] flex items-center gap-1.5">
-                Cloaud / Claude Time Limit
+                Claude Time Limit
               </span>
               <span className="text-[11px] text-[#94a3b8]">
                 {claudeStatus === 'available' ? 'Available' : formatLimitDateTime(tracker.claude_reset_at)}
