@@ -25,3 +25,8 @@ dist-ssr/
 # OS
 .DS_Store
 Thumbs.db
+
+# Media / recordings
+*.mp4
+*.mov
+*.avi
