@@ -21,10 +21,9 @@ interface DashboardProps {
   user: User
 }
 
-export default function Dashboard({ user }: DashboardProps) {
-  const { trackers, loading, error, addTracker, updateTracker, deleteTracker } = useTrackers(
-    user.id
-  )
+export default function Dashboard({ user: _user }: DashboardProps) {
+  const { trackers, syncError: error, addTracker, updateTracker, deleteTracker } = useTrackers()
+  const loading = false
   const [addOpen, setAddOpen] = useState(false)
   const [signingOut, setSigningOut] = useState(false)
 

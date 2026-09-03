@@ -4,19 +4,26 @@ export type ServiceStatus = 'available' | 'limited'
 
 export interface LimitTracker {
   id: string
-  user_id: string
   label: string
   gemini_status: ServiceStatus
   gemini_reset_at: string | null  // ISO 8601 timestamp or null
   claude_status: ServiceStatus
   claude_reset_at: string | null
-  notes: string | null
+  notes?: string | null
   sort_order: number
-  created_at: string
-  updated_at: string
+  created_at?: string
+  updated_at?: string
 }
 
-export type NewTracker = Pick<LimitTracker, 'label' | 'notes' | 'sort_order'>
+export type NewTracker = {
+  label: string
+  gemini_status?: ServiceStatus
+  gemini_reset_at?: string | null
+  claude_status?: ServiceStatus
+  claude_reset_at?: string | null
+  notes?: string | null
+  sort_order?: number
+}
 
 export type UpdateTracker = Partial<
   Pick<
@@ -33,10 +40,8 @@ export type UpdateTracker = Partial<
 
 export type Service = 'gemini' | 'claude'
 
-// ── Countdown state returned by useCountdown ──────────────────
-
 export interface CountdownState {
-  label: string         // "Available", "3h 22m 05s", etc.
-  urgency: 'none' | 'warning' | 'critical'  // drives color
+  label: string
+  urgency: 'none' | 'warning' | 'critical'
   expired: boolean
 }
