@@ -2,9 +2,15 @@ import { Toaster } from 'react-hot-toast'
 import { useAuth } from './hooks/useAuth'
 import LoginPage from './components/LoginPage'
 import Dashboard from './components/Dashboard'
+import ConfigPage from './components/ConfigPage'
+import { isSupabaseConfigured } from './lib/supabase'
 
 export default function App() {
   const { user, loading } = useAuth()
+
+  if (!isSupabaseConfigured) {
+    return <ConfigPage />
+  }
 
   // Full-screen spinner while we resolve the existing session
   if (loading) {

@@ -1,18 +1,38 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string
+// Try reading from Vite environment variables, then fallback to localStorage
+const envUrl = (import.meta.env.VITE_SUPABASE_URL as string) || ''
+const envAnonKey = (import.meta.env.VITE_SUPABASE_ANON_KEY as string) || ''
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error(
-    'Missing Supabase environment variables.\n' +
-    'Copy .env.example → .env and fill in your project credentials.'
-  )
+export function getStoredSupabaseConfig() {
+  const localUrl = localStorage.getItem('supabase_url') || ''
+  const localAnonKey = localStorage.getItem('supabase_anon_key') || ''
+  const url = envUrl || localUrl
+  const anonKey = envAnonKey || localAnonKey
+  return { url, anonKey, isConfigured: Boolean(url && anonKey) }
 }
 
-// We use an untyped client here and cast at the call sites.
-// To get full type safety, run: npx supabase gen types typescript --local > src/types/database.ts
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+export function saveSupabaseConfig(url: string, anonKey: string) {
+  localStorage.setItem('supabase_url', url.trim())
+  localStorage.setItem('supabase_anon_key', anonKey.trim())
+  window.location.reload()
+}
+
+export function clearSupabaseConfig() {
+  localStorage.removeItem('supabase_url')
+  localStorage.removeItem('supabase_anon_key')
+  window.location.reload()
+}
+
+const config = getStoredSupabaseConfig()
+
+// Initialize client with fallback placeholder to prevent crash before user inputs keys
+const activeUrl = config.isConfigured ? config.url : 'https://placeholder.supabase.co'
+const activeAnonKey = config.isConfigured ? config.anonKey : 'placeholder'
+
+export const isSupabaseConfigured = config.isConfigured
+
+export const supabase = createClient(activeUrl, activeAnonKey, {
   auth: {
     persistSession: true,
     autoRefreshToken: true,

@@ -29,8 +29,10 @@ jobs:
     name: Deploy
     needs: lint-typecheck
     runs-on: ubuntu-latest
-    # Only deploy on pushes to main (not PRs)
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    # Only deploy to Vercel if VERCEL_TOKEN secret is configured
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && env.HAS_VERCEL_TOKEN == 'true'
+    env:
+      HAS_VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN != '' }}
     steps:
       - uses: actions/checkout@v4
 
