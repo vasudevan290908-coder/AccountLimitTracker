@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react'
 import type { LimitTracker, UpdateTracker, NewTracker } from '../types/tracker'
+import type { UserThemeConfig } from '../types/theme'
+import { THEME_PRESETS } from '../types/theme'
 import { formatLimitDateTime, calculateRemainingTime } from '../utils/dateUtils'
 import EditRowModal from './EditRowModal'
 import AddRowModal from './AddRowModal'
+import ThemeModal from './ThemeModal'
 import { clearSupabaseConfig, isSupabaseConfigured } from '../lib/supabase'
 import {
   AppleLogoIcon,
@@ -11,10 +14,13 @@ import {
   MacEditIcon,
   MacResetIcon,
   MacSettingsIcon,
+  MacThemeIcon,
   MacWifiIcon,
   MacWifiOffIcon,
   MacClockIcon,
 } from './icons/MacIcons'
+
+const THEME_STORAGE_KEY = 'ai_user_theme_customization_v1'
 
 interface SpreadsheetTableProps {
   trackers: LimitTracker[]
@@ -36,7 +42,28 @@ export default function SpreadsheetTable({
   const [nowMs, setNowMs] = useState<number>(Date.now())
   const [editingTracker, setEditingTracker] = useState<LimitTracker | null>(null)
   const [isAddOpen, setIsAddOpen] = useState(false)
+  const [isThemeOpen, setIsThemeOpen] = useState(false)
   const [resetToast, setResetToast] = useState(false)
+
+  // Load user's custom theme preference
+  const [userTheme, setUserTheme] = useState<UserThemeConfig>(() => {
+    try {
+      const saved = localStorage.getItem(THEME_STORAGE_KEY)
+      if (saved) return JSON.parse(saved)
+    } catch {
+      // ignore
+    }
+    return THEME_PRESETS[0] // Default Obsidian Dark
+  })
+
+  function handleSaveTheme(theme: UserThemeConfig) {
+    setUserTheme(theme)
+    try {
+      localStorage.setItem(THEME_STORAGE_KEY, JSON.stringify(theme))
+    } catch {
+      // ignore
+    }
+  }
 
   function handleReset() {
     onReset()
@@ -78,17 +105,16 @@ export default function SpreadsheetTable({
 
   return (
     <div
-      className="min-h-screen flex flex-col items-center justify-start p-3 sm:p-6 md:p-10 select-none relative overflow-x-hidden text-slate-100"
+      className="min-h-screen flex flex-col items-center justify-start p-3 sm:p-6 md:p-10 select-none relative overflow-x-hidden text-slate-100 transition-colors duration-500"
       style={{
         fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif",
-        background: 'radial-gradient(circle at 50% 10%, #2a1538 0%, #160d26 40%, #0c0b17 80%, #05050d 100%)',
+        background: userTheme.bgGradient,
       }}
     >
-      {/* ── macOS Golden Gate Atmospheric Ambient Glows ── */}
+      {/* ── Atmospheric Ambient Orbs ── */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-        {/* Golden Gate Sunset Amber Glow */}
         <div
-          className="absolute rounded-full blur-[120px] opacity-35"
+          className="absolute rounded-full blur-[140px] opacity-25"
           style={{
             width: '650px',
             height: '450px',
@@ -97,9 +123,8 @@ export default function SpreadsheetTable({
             background: 'radial-gradient(circle, #ff6b35 0%, #e11d48 45%, transparent 70%)',
           }}
         />
-        {/* Pacific Deep Violet Glow */}
         <div
-          className="absolute rounded-full blur-[140px] opacity-25"
+          className="absolute rounded-full blur-[150px] opacity-20"
           style={{
             width: '700px',
             height: '500px',
@@ -108,41 +133,29 @@ export default function SpreadsheetTable({
             background: 'radial-gradient(circle, #7c3aed 0%, #3b82f6 50%, transparent 70%)',
           }}
         />
-        {/* Marin Headlands Cyan Mist Glow */}
-        <div
-          className="absolute rounded-full blur-[100px] opacity-20"
-          style={{
-            width: '450px',
-            height: '450px',
-            top: '35%',
-            left: '-100px',
-            background: 'radial-gradient(circle, #06b6d4 0%, transparent 70%)',
-          }}
-        />
       </div>
 
-      {/* ── macOS 27 Golden Gate Main App Window ── */}
+      {/* ── macOS Main Window ── */}
       <div
         className="relative z-10 w-full max-w-6xl rounded-2xl overflow-hidden transition-all duration-300"
         style={{
-          background: 'rgba(18, 16, 28, 0.42)',
+          background: userTheme.tableBg,
           backdropFilter: 'blur(45px) saturate(210%)',
           WebkitBackdropFilter: 'blur(45px) saturate(210%)',
-          border: '1px solid rgba(255, 255, 255, 0.14)',
-          boxShadow: '0 30px 80px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.08), inset 0 1px 1px rgba(255, 255, 255, 0.22)',
+          border: '1px solid rgba(255, 255, 255, 0.12)',
+          boxShadow: '0 30px 80px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.08), inset 0 1px 1px rgba(255, 255, 255, 0.20)',
         }}
       >
-        {/* ── macOS Window Chrome / Titlebar ── */}
+        {/* ── Window Titlebar ── */}
         <div
           className="px-4 sm:px-6 py-3.5 flex items-center justify-between border-b"
           style={{
-            background: 'rgba(255, 255, 255, 0.035)',
+            background: 'rgba(255, 255, 255, 0.03)',
             borderColor: 'rgba(255, 255, 255, 0.08)',
           }}
         >
           {/* Traffic Lights + App Title */}
           <div className="flex items-center gap-4">
-            {/* macOS Window Traffic Lights */}
             <div className="flex items-center gap-2">
               <span
                 className="w-3 h-3 rounded-full cursor-pointer transition-transform hover:scale-110"
@@ -173,23 +186,22 @@ export default function SpreadsheetTable({
               />
             </div>
 
-            {/* Title with Golden Gate Badge */}
             <div className="flex items-center gap-2.5 ml-2">
               <GoldenGateBadgeIcon size={24} />
               <div className="flex items-center gap-1.5">
                 <AppleLogoIcon size={13} className="text-white/80" />
                 <h1 className="text-xs sm:text-sm font-semibold tracking-wide text-white/95">
-                  AI Limits Tracker <span className="text-white/40 font-normal ml-1">macOS Golden Gate</span>
+                  AI Limits Tracker <span className="text-white/40 font-normal ml-1 hidden sm:inline">Dark Edition</span>
                 </h1>
               </div>
             </div>
           </div>
 
-          {/* Sync Status Badge + Actions */}
-          <div className="flex items-center gap-2 sm:gap-3">
+          {/* Actions & Theme Button */}
+          <div className="flex items-center gap-2 sm:gap-2.5">
             {/* Sync Pill */}
             <div
-              className="flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full font-medium transition-all"
+              className="flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full font-medium"
               style={{
                 background: 'rgba(255, 255, 255, 0.06)',
                 border: '1px solid rgba(255, 255, 255, 0.12)',
@@ -198,20 +210,34 @@ export default function SpreadsheetTable({
               {isSupabaseConfigured && isLiveSync ? (
                 <>
                   <MacWifiIcon size={14} />
-                  <span className="text-cyan-300 text-[11px] font-medium">Live Cloud</span>
+                  <span className="text-cyan-300 text-[11px] font-medium hidden sm:inline">Live Cloud</span>
                 </>
               ) : isSupabaseConfigured ? (
                 <>
                   <MacWifiOffIcon size={14} />
-                  <span className="text-amber-300 text-[11px] font-medium">Connecting</span>
+                  <span className="text-amber-300 text-[11px] font-medium hidden sm:inline">Connecting</span>
                 </>
               ) : (
                 <>
                   <MacClockIcon size={14} />
-                  <span className="text-purple-300 text-[11px] font-medium">Local Fast</span>
+                  <span className="text-purple-300 text-[11px] font-medium hidden sm:inline">Local Fast</span>
                 </>
               )}
             </div>
+
+            {/* Theme & Color Picker Button */}
+            <button
+              onClick={() => setIsThemeOpen(true)}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-white transition-all duration-150 hover:brightness-110 active:scale-95"
+              style={{
+                background: 'rgba(255, 255, 255, 0.07)',
+                border: '1px solid rgba(255, 255, 255, 0.15)',
+              }}
+              title="Customize Colors & Themes"
+            >
+              <MacThemeIcon size={16} />
+              <span className="hidden sm:inline">Theme / Colors</span>
+            </button>
 
             {/* Add Email Button */}
             <button
@@ -255,7 +281,7 @@ export default function SpreadsheetTable({
           </div>
         </div>
 
-        {/* ── Transparent Glass Table Container ── */}
+        {/* ── Table Container ── */}
         <div className="overflow-x-auto p-2 sm:p-4">
           <table
             className="w-full border-separate border-spacing-y-1.5 text-xs sm:text-sm"
@@ -263,14 +289,15 @@ export default function SpreadsheetTable({
               fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif",
             }}
           >
-            {/* Table Header with Glassmorphism */}
+            {/* Table Header */}
             <thead>
-              <tr className="text-white/80 font-semibold tracking-wider text-[11px] uppercase">
+              <tr className="font-semibold tracking-wider text-[11px] uppercase">
                 <th
                   className="py-2.5 px-2 text-center rounded-l-xl"
                   style={{
-                    background: 'linear-gradient(135deg, rgba(244, 63, 94, 0.28), rgba(225, 29, 72, 0.18))',
-                    border: '1px solid rgba(244, 63, 94, 0.35)',
+                    background: userTheme.headerBg,
+                    color: userTheme.headerTextColor,
+                    border: '1px solid rgba(255, 255, 255, 0.15)',
                     borderRight: 'none',
                     width: '46px',
                   }}
@@ -280,9 +307,10 @@ export default function SpreadsheetTable({
                 <th
                   className="py-2.5 px-3 text-left"
                   style={{
-                    background: 'rgba(255, 255, 255, 0.045)',
-                    borderTop: '1px solid rgba(255, 255, 255, 0.10)',
-                    borderBottom: '1px solid rgba(255, 255, 255, 0.10)',
+                    background: userTheme.headerBg,
+                    color: userTheme.headerTextColor,
+                    borderTop: '1px solid rgba(255, 255, 255, 0.15)',
+                    borderBottom: '1px solid rgba(255, 255, 255, 0.15)',
                   }}
                 >
                   Email ID
@@ -290,9 +318,10 @@ export default function SpreadsheetTable({
                 <th
                   className="py-2.5 px-3 text-center"
                   style={{
-                    background: 'rgba(255, 255, 255, 0.045)',
-                    borderTop: '1px solid rgba(255, 255, 255, 0.10)',
-                    borderBottom: '1px solid rgba(255, 255, 255, 0.10)',
+                    background: userTheme.headerBg,
+                    color: userTheme.headerTextColor,
+                    borderTop: '1px solid rgba(255, 255, 255, 0.15)',
+                    borderBottom: '1px solid rgba(255, 255, 255, 0.15)',
                   }}
                 >
                   Gemini Time Limit
@@ -300,9 +329,10 @@ export default function SpreadsheetTable({
                 <th
                   className="py-2.5 px-3 text-center"
                   style={{
-                    background: 'rgba(255, 255, 255, 0.045)',
-                    borderTop: '1px solid rgba(255, 255, 255, 0.10)',
-                    borderBottom: '1px solid rgba(255, 255, 255, 0.10)',
+                    background: userTheme.headerBg,
+                    color: userTheme.headerTextColor,
+                    borderTop: '1px solid rgba(255, 255, 255, 0.15)',
+                    borderBottom: '1px solid rgba(255, 255, 255, 0.15)',
                   }}
                 >
                   Cloaud Time Limit
@@ -310,38 +340,41 @@ export default function SpreadsheetTable({
                 <th
                   className="py-2.5 px-3 text-center"
                   style={{
-                    background: 'rgba(255, 255, 255, 0.045)',
-                    borderTop: '1px solid rgba(255, 255, 255, 0.10)',
-                    borderBottom: '1px solid rgba(255, 255, 255, 0.10)',
+                    background: userTheme.headerBg,
+                    color: userTheme.headerTextColor,
+                    borderTop: '1px solid rgba(255, 255, 255, 0.15)',
+                    borderBottom: '1px solid rgba(255, 255, 255, 0.15)',
                   }}
                 >
-                  Real Time Limit <span className="text-white/40">Of Gemini</span>
+                  Real Time Limit <span className="opacity-60">Of Gemini</span>
                 </th>
                 <th
                   className="py-2.5 px-3 text-center"
                   style={{
-                    background: 'rgba(255, 255, 255, 0.045)',
-                    borderTop: '1px solid rgba(255, 255, 255, 0.10)',
-                    borderBottom: '1px solid rgba(255, 255, 255, 0.10)',
+                    background: userTheme.headerBg,
+                    color: userTheme.headerTextColor,
+                    borderTop: '1px solid rgba(255, 255, 255, 0.15)',
+                    borderBottom: '1px solid rgba(255, 255, 255, 0.15)',
                   }}
                 >
-                  Real Time Limit <span className="text-white/40">Of Cloaud</span>
+                  Real Time Limit <span className="opacity-60">Of Cloaud</span>
                 </th>
                 <th
                   className="py-2.5 px-2 text-center rounded-r-xl"
                   style={{
-                    background: 'rgba(255, 255, 255, 0.045)',
-                    border: '1px solid rgba(255, 255, 255, 0.10)',
+                    background: userTheme.headerBg,
+                    color: userTheme.headerTextColor,
+                    border: '1px solid rgba(255, 255, 255, 0.15)',
                     borderLeft: 'none',
                     width: '44px',
                   }}
                 >
-                  Action
+                  Edit
                 </th>
               </tr>
             </thead>
 
-            {/* Table Rows — Highly Transparent Glass Cards */}
+            {/* Table Rows */}
             <tbody>
               {trackers.map((t, index) => {
                 const geminiRemaining = calculateRemainingTime(t.gemini_status, t.gemini_reset_at, nowMs)
@@ -352,14 +385,14 @@ export default function SpreadsheetTable({
                 return (
                   <tr
                     key={t.id}
-                    className="group transition-all duration-200"
+                    className="group transition-all duration-150"
                   >
-                    {/* Column 0: Sl No — Golden Gate Crimson Squircle */}
+                    {/* Column 0: Sl No */}
                     <td
                       className="py-2.5 px-2 text-center font-bold rounded-l-xl text-xs"
                       style={{
-                        background: 'linear-gradient(135deg, rgba(225, 29, 72, 0.22), rgba(190, 18, 60, 0.14))',
-                        border: '1px solid rgba(244, 63, 94, 0.28)',
+                        background: 'linear-gradient(135deg, rgba(225, 29, 72, 0.25), rgba(190, 18, 60, 0.15))',
+                        border: '1px solid rgba(244, 63, 94, 0.30)',
                         borderRight: 'none',
                         color: '#fda4af',
                         letterSpacing: '0.04em',
@@ -368,37 +401,35 @@ export default function SpreadsheetTable({
                       {index + 1}
                     </td>
 
-                    {/* Column 1: Email ID — Transparent Amber Tint */}
+                    {/* Column 1: Email ID */}
                     <td
                       className="py-2.5 px-3 font-medium text-left truncate max-w-[210px]"
                       style={{
-                        background: 'linear-gradient(135deg, rgba(251, 191, 36, 0.08), rgba(245, 158, 11, 0.04))',
+                        background: userTheme.emailBg,
                         borderTop: '1px solid rgba(255, 255, 255, 0.08)',
                         borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-                        color: '#fef3c7',
+                        color: userTheme.emailTextColor,
                       }}
                     >
                       {t.label}
                     </td>
 
-                    {/* Column 2: Gemini Time Limit — Emerald Crystal / Amber Glow */}
+                    {/* Column 2: Gemini Time Limit */}
                     <td
                       onClick={() => setEditingTracker(t)}
                       title="Click to edit Gemini limit"
                       className="py-2.5 px-3 text-center font-semibold cursor-pointer transition-all duration-150 hover:brightness-125"
                       style={{
-                        background: isGeminiAvailable
-                          ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.18), rgba(5, 150, 105, 0.10))'
-                          : 'linear-gradient(135deg, rgba(245, 158, 11, 0.16), rgba(217, 119, 6, 0.08))',
+                        background: isGeminiAvailable ? userTheme.availableBg : userTheme.limitedBg,
                         borderTop: '1px solid rgba(255, 255, 255, 0.08)',
                         borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-                        color: isGeminiAvailable ? '#34d399' : '#fde68a',
+                        color: isGeminiAvailable ? userTheme.availableTextColor : userTheme.limitedTextColor,
                         fontSize: '0.74rem',
                       }}
                     >
                       {isGeminiAvailable ? (
                         <span className="inline-flex items-center gap-1">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                          <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: userTheme.availableTextColor }} />
                           Available
                         </span>
                       ) : (
@@ -406,24 +437,22 @@ export default function SpreadsheetTable({
                       )}
                     </td>
 
-                    {/* Column 3: Claude Time Limit — Emerald Crystal / Amber Glow */}
+                    {/* Column 3: Claude Time Limit */}
                     <td
                       onClick={() => setEditingTracker(t)}
                       title="Click to edit Claude limit"
                       className="py-2.5 px-3 text-center font-semibold cursor-pointer transition-all duration-150 hover:brightness-125"
                       style={{
-                        background: isClaudeAvailable
-                          ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.18), rgba(5, 150, 105, 0.10))'
-                          : 'linear-gradient(135deg, rgba(245, 158, 11, 0.16), rgba(217, 119, 6, 0.08))',
+                        background: isClaudeAvailable ? userTheme.availableBg : userTheme.limitedBg,
                         borderTop: '1px solid rgba(255, 255, 255, 0.08)',
                         borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-                        color: isClaudeAvailable ? '#34d399' : '#fde68a',
+                        color: isClaudeAvailable ? userTheme.availableTextColor : userTheme.limitedTextColor,
                         fontSize: '0.74rem',
                       }}
                     >
                       {isClaudeAvailable ? (
                         <span className="inline-flex items-center gap-1">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                          <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: userTheme.availableTextColor }} />
                           Available
                         </span>
                       ) : (
@@ -431,14 +460,14 @@ export default function SpreadsheetTable({
                       )}
                     </td>
 
-                    {/* Column 4: Real Time Gemini Countdown — SF Mono Glowing Counter */}
+                    {/* Column 4: Real Time Gemini Countdown */}
                     <td
                       className="py-2.5 px-3 text-center font-bold"
                       style={{
-                        background: 'linear-gradient(135deg, rgba(251, 191, 36, 0.09), rgba(245, 158, 11, 0.03))',
+                        background: userTheme.emailBg,
                         borderTop: '1px solid rgba(255, 255, 255, 0.08)',
                         borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-                        color: geminiRemaining.text === '-' ? 'rgba(255, 255, 255, 0.25)' : '#fef08a',
+                        color: geminiRemaining.text === '-' ? 'rgba(255, 255, 255, 0.25)' : userTheme.countdownTextColor,
                         fontFamily: "'SF Mono', 'Cascadia Code', 'Fira Code', 'JetBrains Mono', 'Consolas', monospace",
                         fontSize: '0.76rem',
                         letterSpacing: '0.04em',
@@ -447,14 +476,14 @@ export default function SpreadsheetTable({
                       {geminiRemaining.text}
                     </td>
 
-                    {/* Column 5: Real Time Claude Countdown — SF Mono Glowing Counter */}
+                    {/* Column 5: Real Time Claude Countdown */}
                     <td
                       className="py-2.5 px-3 text-center font-bold"
                       style={{
-                        background: 'linear-gradient(135deg, rgba(251, 191, 36, 0.09), rgba(245, 158, 11, 0.03))',
+                        background: userTheme.emailBg,
                         borderTop: '1px solid rgba(255, 255, 255, 0.08)',
                         borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-                        color: claudeRemaining.text === '-' ? 'rgba(255, 255, 255, 0.25)' : '#fef08a',
+                        color: claudeRemaining.text === '-' ? 'rgba(255, 255, 255, 0.25)' : userTheme.countdownTextColor,
                         fontFamily: "'SF Mono', 'Cascadia Code', 'Fira Code', 'JetBrains Mono', 'Consolas', monospace",
                         fontSize: '0.76rem',
                         letterSpacing: '0.04em',
@@ -467,7 +496,7 @@ export default function SpreadsheetTable({
                     <td
                       className="py-2.5 px-2 text-center rounded-r-xl"
                       style={{
-                        background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02))',
+                        background: 'rgba(255, 255, 255, 0.04)',
                         border: '1px solid rgba(255, 255, 255, 0.08)',
                         borderLeft: 'none',
                       }}
@@ -487,7 +516,7 @@ export default function SpreadsheetTable({
           </table>
         </div>
 
-        {/* ── Window Footer / Status Bar ── */}
+        {/* ── Status Bar ── */}
         <div
           className="px-4 sm:px-6 py-2.5 flex flex-wrap items-center justify-between text-[11px] border-t"
           style={{
@@ -497,7 +526,7 @@ export default function SpreadsheetTable({
           }}
         >
           <div className="flex items-center gap-2">
-            <span>💡 Click any limit cell or icon to update times</span>
+            <span>💡 Click any limit cell to edit · Use 🎨 Theme button to customize colors</span>
           </div>
           <div className="flex items-center gap-1.5" style={{ fontFamily: "'SF Mono', monospace" }}>
             <span>Live Ticker</span>
@@ -506,7 +535,7 @@ export default function SpreadsheetTable({
         </div>
       </div>
 
-      {/* ── In-page Toast Notification (No Browser Popup) ── */}
+      {/* ── In-page Toast Notification ── */}
       {resetToast && (
         <div
           className="fixed bottom-6 left-1/2 z-50 flex items-center gap-2.5 px-5 py-3 rounded-2xl text-xs font-medium text-white transition-all shadow-2xl animate-bounce"
@@ -525,6 +554,14 @@ export default function SpreadsheetTable({
       )}
 
       {/* ── Modals ── */}
+      {isThemeOpen && (
+        <ThemeModal
+          currentTheme={userTheme}
+          onSelectTheme={handleSaveTheme}
+          onClose={() => setIsThemeOpen(false)}
+        />
+      )}
+
       {editingTracker && (
         <EditRowModal
           tracker={editingTracker}

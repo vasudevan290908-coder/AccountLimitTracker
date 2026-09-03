@@ -187,3 +187,31 @@ export function MacClockIcon({ size = 15, className, style }: IconProps) {
     </svg>
   )
 }
+
+/** ── Palette / Theme — Neon Magenta Squircle ── */
+export function MacThemeIcon({ size = 16, className, style }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 20 20" fill="none" className={className} style={style}>
+      <defs>
+        <linearGradient id="mac-thm-g" x1="0" y1="0" x2="20" y2="20" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#f43f5e" />
+          <stop offset="50%" stopColor="#a855f7" />
+          <stop offset="100%" stopColor="#6366f1" />
+        </linearGradient>
+        <linearGradient id="mac-thm-shine" x1="0" y1="0" x2="0" y2="10">
+          <stop offset="0%" stopColor="#ffffff" stopOpacity="0.35" />
+          <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <rect width="20" height="20" rx="5.5" fill="url(#mac-thm-g)" />
+      <rect width="20" height="10" rx="5.5" fill="url(#mac-thm-shine)" />
+      {/* Palette SVG */}
+      <path d="M10 5.2a4.8 4.8 0 0 0-4.8 4.8c0 2.2 1.4 3.2 2.4 3.2.7 0 .9-.5 1.4-.5.4 0 .8.5 1 .5 2.2 0 4.8-1.8 4.8-4.8 0-2.6-2.1-4.8-4.8-4.8z" stroke="#ffffff" strokeWidth="1.2" fill="none" />
+      <circle cx="7.8" cy="8" r="0.7" fill="#ffffff" />
+      <circle cx="10" cy="7.2" r="0.7" fill="#ffffff" />
+      <circle cx="12.2" cy="8" r="0.7" fill="#ffffff" />
+      <circle cx="12.2" cy="10.2" r="0.7" fill="#ffffff" />
+    </svg>
+  )
+}
+
