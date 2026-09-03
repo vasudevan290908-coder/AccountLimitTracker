@@ -27,13 +27,11 @@ export default function SpreadsheetTable({
   const [editingTracker, setEditingTracker] = useState<LimitTracker | null>(null)
   const [isAddOpen, setIsAddOpen] = useState(false)
 
-  // 1-second live ticker for real-time countdowns
   useEffect(() => {
     const timer = setInterval(() => {
       const now = Date.now()
       setNowMs(now)
 
-      // Auto-expire timers that hit 0
       trackers.forEach((t) => {
         let changed = false
         const patch: UpdateTracker = {}
@@ -54,9 +52,7 @@ export default function SpreadsheetTable({
           }
         }
 
-        if (changed) {
-          onUpdate(t.id, patch)
-        }
+        if (changed) onUpdate(t.id, patch)
       })
     }, 1000)
 
@@ -64,187 +60,296 @@ export default function SpreadsheetTable({
   }, [trackers, onUpdate])
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center p-3 sm:p-6 select-none font-sans">
-      {/* Top Toolbar */}
-      <div className="w-full max-w-5xl mb-4 flex flex-wrap items-center justify-between gap-3 bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 shadow-lg">
+    <div
+      className="min-h-screen flex flex-col items-center p-4 sm:p-8 select-none"
+      style={{
+        fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif",
+        background: 'linear-gradient(135deg, #0d0d1a 0%, #0a1628 30%, #0f0a1e 60%, #1a0a2e 100%)',
+        minHeight: '100vh',
+      }}
+    >
+      {/* Ambient background orbs */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div
+          className="absolute rounded-full blur-3xl opacity-20"
+          style={{
+            width: '600px', height: '600px',
+            top: '-100px', left: '-100px',
+            background: 'radial-gradient(circle, #6366f1 0%, transparent 70%)',
+          }}
+        />
+        <div
+          className="absolute rounded-full blur-3xl opacity-15"
+          style={{
+            width: '500px', height: '500px',
+            bottom: '-50px', right: '-50px',
+            background: 'radial-gradient(circle, #8b5cf6 0%, transparent 70%)',
+          }}
+        />
+        <div
+          className="absolute rounded-full blur-3xl opacity-10"
+          style={{
+            width: '400px', height: '400px',
+            top: '40%', left: '50%',
+            background: 'radial-gradient(circle, #06b6d4 0%, transparent 70%)',
+          }}
+        />
+      </div>
+
+      {/* Top Toolbar — glass card */}
+      <div
+        className="relative z-10 w-full max-w-6xl mb-6 flex flex-wrap items-center justify-between gap-3 px-5 py-3.5 rounded-2xl"
+        style={{
+          background: 'rgba(255,255,255,0.06)',
+          backdropFilter: 'blur(24px)',
+          WebkitBackdropFilter: 'blur(24px)',
+          border: '1px solid rgba(255,255,255,0.12)',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1)',
+        }}
+      >
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse" />
-            <h1 className="text-base sm:text-lg font-black tracking-wide text-white">
+          <div className="flex items-center gap-2.5">
+            <span
+              className="w-2.5 h-2.5 rounded-full animate-pulse"
+              style={{ background: 'linear-gradient(135deg, #34d399, #10b981)' }}
+            />
+            <h1
+              className="text-base sm:text-lg font-bold tracking-widest text-white"
+              style={{ letterSpacing: '0.12em', fontWeight: 700 }}
+            >
               AI LIMITS TRACKER
             </h1>
           </div>
 
-          <span className="text-xs px-2.5 py-1 rounded-full flex items-center gap-1.5 font-medium border bg-slate-800 border-slate-700 text-slate-300">
+          <span
+            className="text-xs px-3 py-1 rounded-full flex items-center gap-1.5 font-medium"
+            style={{
+              background: 'rgba(255,255,255,0.08)',
+              border: '1px solid rgba(255,255,255,0.14)',
+              color: isSupabaseConfigured && isLiveSync ? '#6ee7b7' : isSupabaseConfigured ? '#fcd34d' : '#93c5fd',
+            }}
+          >
             {isSupabaseConfigured && isLiveSync ? (
-              <>
-                <Wifi className="w-3 h-3 text-emerald-400" />
-                <span className="text-emerald-400">Cloud Live Sync</span>
-              </>
+              <><Wifi className="w-3 h-3" /><span>Cloud Live</span></>
             ) : isSupabaseConfigured ? (
-              <>
-                <WifiOff className="w-3 h-3 text-yellow-400" />
-                <span className="text-yellow-400">Connecting…</span>
-              </>
+              <><WifiOff className="w-3 h-3" /><span>Connecting…</span></>
             ) : (
-              <>
-                <Clock className="w-3 h-3 text-sky-400" />
-                <span className="text-sky-400">Local Instant</span>
-              </>
+              <><Clock className="w-3 h-3" /><span>Local Instant</span></>
             )}
           </span>
         </div>
 
-        {/* Action buttons */}
         <div className="flex items-center gap-2">
           <button
             onClick={() => setIsAddOpen(true)}
-            className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-3.5 py-2 rounded-lg transition-all shadow"
+            className="flex items-center gap-1.5 font-semibold text-xs px-4 py-2 rounded-xl text-white transition-all"
+            style={{
+              background: 'linear-gradient(135deg, rgba(52,211,153,0.3), rgba(16,185,129,0.2))',
+              border: '1px solid rgba(52,211,153,0.4)',
+              backdropFilter: 'blur(12px)',
+            }}
           >
-            <Plus className="w-3.5 h-3.5" />
-            Add Email
+            <Plus className="w-3.5 h-3.5" /> Add Email
           </button>
 
           <button
-            onClick={() => {
-              if (confirm('Reset table rows back to default accounts?')) {
-                onReset()
-              }
-            }}
+            onClick={() => { if (confirm('Reset table rows back to default accounts?')) onReset() }}
             title="Reset to default accounts"
-            className="p-2 text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-xs transition-colors"
+            className="p-2 rounded-xl transition-all"
+            style={{
+              background: 'rgba(255,255,255,0.06)',
+              border: '1px solid rgba(255,255,255,0.12)',
+              color: 'rgba(255,255,255,0.6)',
+            }}
           >
             <RotateCcw className="w-3.5 h-3.5" />
           </button>
 
           <button
-            onClick={() => {
-              if (confirm('Change or enter Supabase Cloud credentials?')) {
-                clearSupabaseConfig()
-              }
-            }}
+            onClick={() => { if (confirm('Change or enter Supabase Cloud credentials?')) clearSupabaseConfig() }}
             title="Configure Cloud Sync Keys"
-            className="p-2 text-slate-400 hover:text-sky-400 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-xs transition-colors"
+            className="p-2 rounded-xl transition-all"
+            style={{
+              background: 'rgba(255,255,255,0.06)',
+              border: '1px solid rgba(255,255,255,0.12)',
+              color: 'rgba(255,255,255,0.6)',
+            }}
           >
             <Settings2 className="w-3.5 h-3.5" />
           </button>
         </div>
       </div>
 
-      {/* Main Spreadsheet Table Container */}
-      <div className="w-full max-w-5xl overflow-x-auto shadow-2xl rounded-sm border-2 border-black bg-white">
-        <table className="w-full border-collapse text-black text-xs sm:text-sm font-sans">
-          {/* Table Header matching user's red banner */}
+      {/* Main Table — glass card */}
+      <div
+        className="relative z-10 w-full max-w-6xl overflow-x-auto rounded-2xl"
+        style={{
+          background: 'rgba(255,255,255,0.04)',
+          backdropFilter: 'blur(32px)',
+          WebkitBackdropFilter: 'blur(32px)',
+          border: '1px solid rgba(255,255,255,0.10)',
+          boxShadow: '0 24px 64px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08)',
+        }}
+      >
+        <table
+          className="w-full border-collapse text-xs sm:text-sm"
+          style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif" }}
+        >
+          {/* Header */}
           <thead>
-            <tr className="bg-[#e60000] text-black font-extrabold text-center border-b-2 border-black">
-              <th className="py-3 px-2 border-r border-black tracking-tight w-10">
-                Sl No
-              </th>
-              <th className="py-3 px-3 sm:px-4 border-r border-black tracking-tight">
-                Email ID
-              </th>
-              <th className="py-3 px-3 sm:px-4 border-r border-black tracking-tight">
-                Gemini Time Limit
-              </th>
-              <th className="py-3 px-3 sm:px-4 border-r border-black tracking-tight">
-                Cloaud Time Limit
-              </th>
-              <th className="py-3 px-3 sm:px-4 border-r border-black tracking-tight">
-                Real Time
-                <br />
-                Limit <span className="underline">Of</span> Gemini
-              </th>
-              <th className="py-3 px-3 sm:px-4 border-r border-black tracking-tight">
-                Real Time
-                <br />
-                Limit <span className="underline">Of</span> Cloaud
-              </th>
-              <th className="py-3 px-2 w-12 text-center text-xs">
-                Edit
-              </th>
+            <tr
+              style={{
+                background: 'linear-gradient(135deg, rgba(220,38,38,0.55) 0%, rgba(185,28,28,0.45) 100%)',
+                borderBottom: '1px solid rgba(255,255,255,0.12)',
+              }}
+            >
+              {['Sl No', 'Email ID', 'Gemini Time Limit', 'Cloaud Time Limit', 'Real Time Limit Of Gemini', 'Real Time Limit Of Cloaud', ''].map((col, i) => (
+                <th
+                  key={i}
+                  className="py-4 px-3 text-center font-semibold text-white tracking-wide"
+                  style={{
+                    fontSize: i === 0 ? '0.7rem' : '0.75rem',
+                    letterSpacing: '0.07em',
+                    borderRight: i < 6 ? '1px solid rgba(255,255,255,0.10)' : undefined,
+                    width: i === 0 ? '52px' : i === 6 ? '48px' : undefined,
+                  }}
+                >
+                  {col}
+                </th>
+              ))}
             </tr>
           </thead>
 
-          {/* Table Rows matching user's yellow and green cells */}
+          {/* Rows */}
           <tbody>
             {trackers.map((t, index) => {
-              const geminiRemaining = calculateRemainingTime(
-                t.gemini_status,
-                t.gemini_reset_at,
-                nowMs
-              )
-              const claudeRemaining = calculateRemainingTime(
-                t.claude_status,
-                t.claude_reset_at,
-                nowMs
-              )
-
+              const geminiRemaining = calculateRemainingTime(t.gemini_status, t.gemini_reset_at, nowMs)
+              const claudeRemaining = calculateRemainingTime(t.claude_status, t.claude_reset_at, nowMs)
               const isGeminiAvailable = t.gemini_status === 'available'
               const isClaudeAvailable = t.claude_status === 'available'
+              const isEven = index % 2 === 0
+
+              const rowBg = isEven
+                ? 'rgba(255,255,255,0.03)'
+                : 'rgba(255,255,255,0.015)'
+
+              const borderStyle = '1px solid rgba(255,255,255,0.07)'
 
               return (
                 <tr
                   key={t.id}
-                  className="border-b border-black text-center font-medium hover:brightness-95 transition-all group"
+                  className="transition-all duration-150 group"
+                  style={{
+                    background: rowBg,
+                    borderBottom: '1px solid rgba(255,255,255,0.06)',
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.07)')}
+                  onMouseLeave={e => (e.currentTarget.style.background = rowBg)}
                 >
-                  {/* Column 0: Sl No */}
-                  <td className="py-2.5 px-2 border-r border-black bg-[#e60000] text-black font-bold text-center w-10">
+                  {/* Sl No */}
+                  <td
+                    className="py-3 px-2 text-center font-bold"
+                    style={{
+                      borderRight: borderStyle,
+                      background: 'linear-gradient(135deg, rgba(220,38,38,0.35), rgba(185,28,28,0.25))',
+                      color: '#fca5a5',
+                      fontSize: '0.75rem',
+                      letterSpacing: '0.05em',
+                    }}
+                  >
                     {index + 1}
                   </td>
 
-                  {/* Column 1: Email ID (Yellow) */}
-                  <td className="py-2.5 px-3 border-r border-black bg-[#ffff00] text-black font-semibold text-left sm:text-center truncate max-w-[180px]">
+                  {/* Email ID */}
+                  <td
+                    className="py-3 px-3 font-medium text-left truncate max-w-[200px]"
+                    style={{
+                      borderRight: borderStyle,
+                      background: 'linear-gradient(135deg, rgba(251,191,36,0.18), rgba(245,158,11,0.10))',
+                      color: '#fde68a',
+                      fontWeight: 500,
+                    }}
+                  >
                     {t.label}
                   </td>
 
-                  {/* Column 2: Gemini Time Limit (Green if Available, Yellow if date) */}
+                  {/* Gemini Time Limit */}
                   <td
                     onClick={() => setEditingTracker(t)}
                     title="Click to update Gemini status"
-                    className={`py-2.5 px-3 border-r border-black cursor-pointer ${
-                      isGeminiAvailable
-                        ? 'bg-[#00b050] text-black font-bold'
-                        : 'bg-[#ffff00] text-black text-xs sm:text-sm'
-                    }`}
+                    className="py-3 px-3 text-center font-semibold cursor-pointer transition-all"
+                    style={{
+                      borderRight: borderStyle,
+                      background: isGeminiAvailable
+                        ? 'linear-gradient(135deg, rgba(16,185,129,0.30), rgba(5,150,105,0.20))'
+                        : 'linear-gradient(135deg, rgba(251,191,36,0.25), rgba(245,158,11,0.15))',
+                      color: isGeminiAvailable ? '#6ee7b7' : '#fde68a',
+                      fontSize: '0.72rem',
+                    }}
                   >
-                    {isGeminiAvailable
-                      ? 'Available'
-                      : formatLimitDateTime(t.gemini_reset_at)}
+                    {isGeminiAvailable ? '✦ Available' : formatLimitDateTime(t.gemini_reset_at)}
                   </td>
 
-                  {/* Column 3: Cloaud Time Limit (Green if Available, Yellow if date) */}
+                  {/* Claude Time Limit */}
                   <td
                     onClick={() => setEditingTracker(t)}
                     title="Click to update Claude status"
-                    className={`py-2.5 px-3 border-r border-black cursor-pointer ${
-                      isClaudeAvailable
-                        ? 'bg-[#00b050] text-black font-bold'
-                        : 'bg-[#ffff00] text-black text-xs sm:text-sm'
-                    }`}
+                    className="py-3 px-3 text-center font-semibold cursor-pointer transition-all"
+                    style={{
+                      borderRight: borderStyle,
+                      background: isClaudeAvailable
+                        ? 'linear-gradient(135deg, rgba(16,185,129,0.30), rgba(5,150,105,0.20))'
+                        : 'linear-gradient(135deg, rgba(251,191,36,0.25), rgba(245,158,11,0.15))',
+                      color: isClaudeAvailable ? '#6ee7b7' : '#fde68a',
+                      fontSize: '0.72rem',
+                    }}
                   >
-                    {isClaudeAvailable
-                      ? 'Available'
-                      : formatLimitDateTime(t.claude_reset_at)}
+                    {isClaudeAvailable ? '✦ Available' : formatLimitDateTime(t.claude_reset_at)}
                   </td>
 
-                  {/* Column 4: Real Time Limit Of Gemini (Yellow with live ticking countdown) */}
-                  <td className="py-2.5 px-3 border-r border-black bg-[#ffff00] text-black font-mono font-bold text-center">
+                  {/* Real Time Limit Of Gemini */}
+                  <td
+                    className="py-3 px-3 text-center font-bold"
+                    style={{
+                      borderRight: borderStyle,
+                      background: 'linear-gradient(135deg, rgba(251,191,36,0.15), rgba(245,158,11,0.08))',
+                      color: geminiRemaining.text === '-' ? 'rgba(255,255,255,0.3)' : '#fcd34d',
+                      fontFamily: "'SF Mono', 'Cascadia Code', 'Fira Code', 'JetBrains Mono', 'Consolas', monospace",
+                      fontSize: '0.75rem',
+                      letterSpacing: '0.05em',
+                    }}
+                  >
                     {geminiRemaining.text}
                   </td>
 
-                  {/* Column 5: Real Time Limit Of Cloaud (Yellow with live ticking countdown) */}
-                  <td className="py-2.5 px-3 border-r border-black bg-[#ffff00] text-black font-mono font-bold text-center">
+                  {/* Real Time Limit Of Claude */}
+                  <td
+                    className="py-3 px-3 text-center font-bold"
+                    style={{
+                      borderRight: borderStyle,
+                      background: 'linear-gradient(135deg, rgba(251,191,36,0.15), rgba(245,158,11,0.08))',
+                      color: claudeRemaining.text === '-' ? 'rgba(255,255,255,0.3)' : '#fcd34d',
+                      fontFamily: "'SF Mono', 'Cascadia Code', 'Fira Code', 'JetBrains Mono', 'Consolas', monospace",
+                      fontSize: '0.75rem',
+                      letterSpacing: '0.05em',
+                    }}
+                  >
                     {claudeRemaining.text}
                   </td>
 
-                  {/* Action: Edit Button */}
-                  <td className="py-2.5 px-2 bg-[#ffff00] text-center">
+                  {/* Edit */}
+                  <td className="py-3 px-2 text-center">
                     <button
                       onClick={() => setEditingTracker(t)}
-                      className="p-1 rounded bg-black/10 hover:bg-black/20 text-black transition-colors"
+                      className="p-1.5 rounded-lg transition-all opacity-40 group-hover:opacity-100"
                       title="Edit this account"
+                      style={{
+                        background: 'rgba(255,255,255,0.08)',
+                        border: '1px solid rgba(255,255,255,0.12)',
+                        color: 'rgba(255,255,255,0.9)',
+                      }}
                     >
-                      <Edit2 className="w-3.5 h-3.5" />
+                      <Edit2 className="w-3 h-3" />
                     </button>
                   </td>
                 </tr>
@@ -254,15 +359,12 @@ export default function SpreadsheetTable({
         </table>
       </div>
 
-      {/* Footer Info */}
-      <div className="w-full max-w-5xl mt-3 flex flex-wrap items-center justify-between text-xs text-slate-400 px-2">
-        <p>
-          💡 <strong>Tip:</strong> Click on any cell or click the <Edit2 className="w-3 h-3 inline mx-0.5" /> icon to update Available / Limited times.
-        </p>
-        <p>Countdowns update live every second.</p>
+      {/* Footer */}
+      <div className="relative z-10 w-full max-w-6xl mt-4 flex flex-wrap items-center justify-between text-xs px-1" style={{ color: 'rgba(255,255,255,0.35)' }}>
+        <p>💡 Click any row or <Edit2 className="w-3 h-3 inline mx-0.5" /> to update Available / Limited times.</p>
+        <p style={{ fontFamily: "'SF Mono', monospace" }}>Countdowns update every second</p>
       </div>
 
-      {/* Edit Modal */}
       {editingTracker && (
         <EditRowModal
           tracker={editingTracker}
@@ -272,7 +374,6 @@ export default function SpreadsheetTable({
         />
       )}
 
-      {/* Add Modal */}
       {isAddOpen && (
         <AddRowModal
           onAdd={onAdd}
