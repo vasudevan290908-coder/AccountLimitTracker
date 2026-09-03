@@ -208,6 +208,40 @@ export function useTrackers() {
     persistLocal(DEFAULT_TRACKERS)
   }, [persistLocal])
 
+  const refreshTrackers = useCallback(async () => {
+    if (isSupabaseConfigured) {
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data, error } = await (supabase as any)
+          .from('limit_trackers')
+          .select('*')
+          .order('sort_order', { ascending: true })
+
+        if (!error && data && data.length > 0) {
+          setTrackers(data as LimitTracker[])
+          persistLocal(data as LimitTracker[])
+          setIsLiveSync(true)
+          return
+        }
+      } catch (err) {
+        console.warn('Refresh from cloud notice:', err)
+      }
+    }
+
+    // Local storage reload
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY)
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setTrackers(parsed)
+        }
+      }
+    } catch (e) {
+      console.error('Error reloading localStorage', e)
+    }
+  }, [persistLocal])
+
   return {
     trackers,
     isLiveSync,
@@ -216,5 +250,6 @@ export function useTrackers() {
     updateTracker,
     deleteTracker,
     resetToDefault,
+    refreshTrackers,
   }
 }

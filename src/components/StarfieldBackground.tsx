@@ -5,10 +5,21 @@ interface Star {
   y: number
   radius: number
   baseAlpha: number
-  alpha: number
   twinkleSpeed: number
+  twinklePhase: number
   vx: number
   vy: number
+  layer: number // 1: distant, 2: mid, 3: close
+}
+
+interface ShootingStar {
+  x: number
+  y: number
+  length: number
+  speed: number
+  angle: number
+  opacity: number
+  active: boolean
 }
 
 export default function StarfieldBackground() {
@@ -22,94 +33,188 @@ export default function StarfieldBackground() {
     if (!ctx) return
 
     let animationFrameId: number
-    let width = (canvas.width = window.innerWidth)
-    let height = (canvas.height = window.innerHeight)
+    let width = 0
+    let height = 0
+    let dpr = window.devicePixelRatio || 1
 
     const handleResize = () => {
       if (!canvas) return
-      width = canvas.width = window.innerWidth
-      height = canvas.height = window.innerHeight
+      dpr = window.devicePixelRatio || 1
+      width = window.innerWidth
+      height = window.innerHeight
+      canvas.width = Math.floor(width * dpr)
+      canvas.height = Math.floor(height * dpr)
+      canvas.style.width = `${width}px`
+      canvas.style.height = `${height}px`
+      ctx.scale(dpr, dpr)
     }
 
+    handleResize()
     window.addEventListener('resize', handleResize)
 
-    // Generate stars matching the Framer starry night video
-    const starCount = Math.floor((width * height) / 3200) // Density calibrated to video
+    // Generate multi-depth star layers matching the Framer space video
+    // Density tuned for high aesthetics
+    const starCount = Math.floor((width * height) / 2200)
     const stars: Star[] = []
 
+    // Base drift direction (smooth continuous motion towards upper-left diagonal)
+    const driftAngle = (215 * Math.PI) / 180 // ~215 degrees
+    const baseSpeed = 0.55 // lively and smooth velocity
+
     for (let i = 0; i < starCount; i++) {
-      const radius = Math.random() < 0.85 ? Math.random() * 0.9 + 0.3 : Math.random() * 1.5 + 1.0
-      const baseAlpha = Math.random() * 0.7 + 0.3
+      const depthRand = Math.random()
+      let layer = 1
+      let speedMult = 0.4
+      let radius = Math.random() * 0.7 + 0.35
+
+      if (depthRand > 0.88) {
+        // Foreground close stars: larger, faster, soft glow
+        layer = 3
+        speedMult = 1.25
+        radius = Math.random() * 0.9 + 1.2
+      } else if (depthRand > 0.55) {
+        // Midground stars
+        layer = 2
+        speedMult = 0.8
+        radius = Math.random() * 0.6 + 0.8
+      } else {
+        // Distant background stars: small, subtle, slower
+        layer = 1
+        speedMult = 0.45
+        radius = Math.random() * 0.5 + 0.3
+      }
+
+      const speed = baseSpeed * speedMult * (0.8 + Math.random() * 0.4)
+      const starAngle = driftAngle + (Math.random() - 0.5) * 0.2 // subtle variation in angle
+
       stars.push({
         x: Math.random() * width,
         y: Math.random() * height,
         radius,
-        baseAlpha,
-        alpha: baseAlpha,
-        twinkleSpeed: Math.random() * 0.02 + 0.005,
-        vx: (Math.random() - 0.5) * 0.08,
-        vy: (Math.random() - 0.5) * 0.08,
+        baseAlpha: Math.random() * 0.55 + 0.35,
+        twinkleSpeed: Math.random() * 0.035 + 0.01,
+        twinklePhase: Math.random() * Math.PI * 2,
+        vx: Math.cos(starAngle) * speed,
+        vy: Math.sin(starAngle) * speed,
+        layer,
       })
     }
 
-    let time = 0
+    // Occasional subtle shooting star
+    const shootingStars: ShootingStar[] = []
+    let nextShootingStarTime = Date.now() + 4000
 
-    const render = () => {
-      time += 0.02
-      ctx.fillStyle = '#020205'
+    function spawnShootingStar() {
+      shootingStars.push({
+        x: Math.random() * (width * 0.8) + width * 0.2,
+        y: Math.random() * (height * 0.4),
+        length: Math.random() * 70 + 60,
+        speed: Math.random() * 7 + 10,
+        angle: (220 * Math.PI) / 180 + (Math.random() - 0.5) * 0.15,
+        opacity: 0.9,
+        active: true,
+      })
+    }
+
+    let lastTime = performance.now()
+
+    const render = (currentTime: number) => {
+      const delta = Math.min((currentTime - lastTime) / 16.667, 2.5) // normalize to ~60fps
+      lastTime = currentTime
+
+      // Deep space black backdrop
+      ctx.fillStyle = '#000002'
       ctx.fillRect(0, 0, width, height)
 
-      // Draw subtle cosmic dust / nebula center glow
+      // Subtle atmospheric deep indigo / obsidian gradient
       const radialGradient = ctx.createRadialGradient(
         width * 0.5,
-        height * 0.45,
-        50,
+        height * 0.4,
+        80,
         width * 0.5,
         height * 0.5,
-        Math.max(width, height) * 0.75
+        Math.max(width, height) * 0.85
       )
-      radialGradient.addColorStop(0, 'rgba(15, 18, 30, 0.45)')
-      radialGradient.addColorStop(0.5, 'rgba(6, 8, 16, 0.25)')
-      radialGradient.addColorStop(1, 'rgba(1, 2, 4, 0.9)')
+      radialGradient.addColorStop(0, 'rgba(8, 11, 22, 0.4)')
+      radialGradient.addColorStop(0.6, 'rgba(3, 4, 10, 0.2)')
+      radialGradient.addColorStop(1, 'rgba(0, 0, 1, 0.85)')
       ctx.fillStyle = radialGradient
       ctx.fillRect(0, 0, width, height)
 
-      // Draw and update stars
+      const timeSec = currentTime * 0.001
+
+      // Render shooting stars
+      if (currentTime > nextShootingStarTime) {
+        spawnShootingStar()
+        nextShootingStarTime = currentTime + Math.random() * 6000 + 4000
+      }
+
+      for (let s = shootingStars.length - 1; s >= 0; s--) {
+        const ss = shootingStars[s]
+        if (!ss.active) continue
+
+        ss.x += Math.cos(ss.angle) * ss.speed * delta
+        ss.y += Math.sin(ss.angle) * ss.speed * delta
+        ss.opacity -= 0.015 * delta
+
+        if (ss.opacity <= 0 || ss.x < -100 || ss.y > height + 100) {
+          shootingStars.splice(s, 1)
+          continue
+        }
+
+        const tailX = ss.x - Math.cos(ss.angle) * ss.length
+        const tailY = ss.y - Math.sin(ss.angle) * ss.length
+
+        const grad = ctx.createLinearGradient(ss.x, ss.y, tailX, tailY)
+        grad.addColorStop(0, `rgba(235, 240, 255, ${ss.opacity * 0.95})`)
+        grad.addColorStop(0.3, `rgba(180, 200, 255, ${ss.opacity * 0.6})`)
+        grad.addColorStop(1, 'rgba(180, 200, 255, 0)')
+
+        ctx.beginPath()
+        ctx.moveTo(ss.x, ss.y)
+        ctx.lineTo(tailX, tailY)
+        ctx.strokeStyle = grad
+        ctx.lineWidth = 1.2
+        ctx.stroke()
+      }
+
+      // Render and update starfield
       for (let i = 0; i < stars.length; i++) {
         const star = stars[i]
 
-        // Move star slowly
-        star.x += star.vx
-        star.y += star.vy
+        // Smooth continuous movement
+        star.x += star.vx * delta
+        star.y += star.vy * delta
 
-        // Wrap around borders
-        if (star.x < 0) star.x = width
-        if (star.x > width) star.x = 0
-        if (star.y < 0) star.y = height
-        if (star.y > height) star.y = 0
+        // Wrap around boundaries smoothly
+        if (star.x < -10) star.x = width + 10
+        if (star.x > width + 10) star.x = -10
+        if (star.y < -10) star.y = height + 10
+        if (star.y > height + 10) star.y = -10
 
-        // Twinkle sinusoidal oscillation
-        const twinkle = Math.sin(time * star.twinkleSpeed * 60 + i)
-        const currentAlpha = Math.max(0.15, Math.min(1, star.baseAlpha + twinkle * 0.35))
+        // Smooth sinusoidal twinkling
+        const twinkle = Math.sin(timeSec * star.twinkleSpeed * 120 + star.twinklePhase)
+        const currentAlpha = Math.max(0.18, Math.min(0.98, star.baseAlpha + twinkle * 0.38))
 
-        ctx.beginPath()
-        ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2)
-        ctx.fillStyle = `rgba(240, 244, 255, ${currentAlpha})`
-        ctx.fill()
-
-        // Soft glow for larger stars
-        if (star.radius > 1.2) {
+        // Soft halo glow for larger stars (layer 3)
+        if (star.layer === 3) {
           ctx.beginPath()
-          ctx.arc(star.x, star.y, star.radius * 2.2, 0, Math.PI * 2)
-          ctx.fillStyle = `rgba(225, 235, 255, ${currentAlpha * 0.18})`
+          ctx.arc(star.x, star.y, star.radius * 2.6, 0, Math.PI * 2)
+          ctx.fillStyle = `rgba(215, 228, 255, ${currentAlpha * 0.15})`
           ctx.fill()
         }
+
+        // Star core
+        ctx.beginPath()
+        ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2)
+        ctx.fillStyle = `rgba(238, 242, 255, ${currentAlpha})`
+        ctx.fill()
       }
 
       animationFrameId = requestAnimationFrame(render)
     }
 
-    render()
+    animationFrameId = requestAnimationFrame(render)
 
     return () => {
       window.removeEventListener('resize', handleResize)
@@ -124,7 +229,7 @@ export default function StarfieldBackground() {
       style={{
         width: '100vw',
         height: '100vh',
-        background: '#020205',
+        background: '#000002',
       }}
     />
   )

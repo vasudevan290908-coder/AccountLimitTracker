@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Plus, Edit2, RotateCcw } from 'lucide-react'
+import { Plus, RotateCcw } from 'lucide-react'
 import type { LimitTracker, UpdateTracker, NewTracker } from '../types/tracker'
 import { formatLimitDateTime, calculateRemainingTime } from '../utils/dateUtils'
 import StarfieldBackground from './StarfieldBackground'
@@ -12,7 +12,7 @@ interface SpreadsheetTableProps {
   onAdd: (data: NewTracker) => void
   onUpdate: (id: string, data: UpdateTracker) => void
   onDelete: (id: string) => void
-  onReset: () => void
+  onRefresh: () => Promise<void> | void
 }
 
 export default function SpreadsheetTable({
@@ -20,17 +20,23 @@ export default function SpreadsheetTable({
   onAdd,
   onUpdate,
   onDelete,
-  onReset,
+  onRefresh,
 }: SpreadsheetTableProps) {
   const [nowMs, setNowMs] = useState<number>(Date.now())
   const [editingTracker, setEditingTracker] = useState<LimitTracker | null>(null)
   const [isAddOpen, setIsAddOpen] = useState(false)
-  const [resetToast, setResetToast] = useState(false)
+  const [isRefreshing, setIsRefreshing] = useState(false)
+  const [refreshToast, setRefreshToast] = useState(false)
 
-  function handleReset() {
-    onReset()
-    setResetToast(true)
-    setTimeout(() => setResetToast(false), 2500)
+  async function handleRefresh() {
+    setIsRefreshing(true)
+    try {
+      await onRefresh()
+      setRefreshToast(true)
+      setTimeout(() => setRefreshToast(false), 2000)
+    } finally {
+      setTimeout(() => setIsRefreshing(false), 500)
+    }
   }
 
   useEffect(() => {
@@ -79,35 +85,38 @@ export default function SpreadsheetTable({
       <div
         className="relative z-10 w-full max-w-6xl rounded-2xl overflow-hidden transition-all duration-300"
         style={{
-          background: 'rgba(255, 255, 255, 0.035)',
-          backdropFilter: 'blur(30px) saturate(170%)',
-          WebkitBackdropFilter: 'blur(30px) saturate(170%)',
-          border: '1px solid rgba(255, 255, 255, 0.09)',
-          boxShadow: '0 24px 70px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.12)',
+          background: 'rgba(4, 6, 14, 0.16)',
+          backdropFilter: 'blur(12px) saturate(140%)',
+          WebkitBackdropFilter: 'blur(12px) saturate(140%)',
+          border: '1px solid rgba(255, 255, 255, 0.06)',
+          boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08)',
         }}
       >
         {/* ── Top Bar ── */}
         <div
           className="px-5 py-4 flex items-center justify-between border-b"
           style={{
-            background: 'rgba(255, 255, 255, 0.02)',
-            borderColor: 'rgba(255, 255, 255, 0.07)',
+            background: 'rgba(255, 255, 255, 0.01)',
+            borderColor: 'rgba(255, 255, 255, 0.05)',
           }}
         >
-          <h1
-            className="text-sm font-semibold tracking-wide text-[#f1f5f9]"
-            style={{ letterSpacing: '0.04em' }}
-          >
-            AI Limits Tracker
-          </h1>
+          <div className="flex items-center gap-2.5">
+            <div className="w-2 h-2 rounded-full bg-[#38bdf8] opacity-80 animate-pulse" />
+            <h1
+              className="text-sm font-semibold tracking-wide text-[#f1f5f9]"
+              style={{ letterSpacing: '0.04em' }}
+            >
+              AI Limits Tracker
+            </h1>
+          </div>
 
           <div className="flex items-center gap-2">
             <button
               onClick={() => setIsAddOpen(true)}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium text-[#f1f5f9] transition-all hover:bg-white/10 active:scale-95 shadow-sm"
               style={{
-                background: 'rgba(255, 255, 255, 0.06)',
-                border: '1px solid rgba(255, 255, 255, 0.14)',
+                background: 'rgba(255, 255, 255, 0.04)',
+                border: '1px solid rgba(255, 255, 255, 0.10)',
               }}
             >
               <Plus className="w-3.5 h-3.5 text-[#cbd5e1]" />
@@ -115,15 +124,16 @@ export default function SpreadsheetTable({
             </button>
 
             <button
-              onClick={handleReset}
-              title="Reset table"
-              className="p-1.5 rounded-xl text-[#cbd5e1] hover:text-[#f8fafc] transition-all hover:bg-white/10 active:scale-95"
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              title="Refresh table"
+              className="p-1.5 rounded-xl text-[#cbd5e1] hover:text-[#f1f5f9] transition-all hover:bg-white/10 active:scale-95 disabled:opacity-50"
               style={{
-                background: 'rgba(255, 255, 255, 0.04)',
-                border: '1px solid rgba(255, 255, 255, 0.10)',
+                background: 'rgba(255, 255, 255, 0.03)',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
               }}
             >
-              <RotateCcw className="w-3.5 h-3.5" />
+              <RotateCcw className={`w-3.5 h-3.5 transition-transform duration-500 ${isRefreshing ? 'animate-spin' : ''}`} />
             </button>
           </div>
         </div>
@@ -135,30 +145,27 @@ export default function SpreadsheetTable({
               <tr
                 className="font-semibold uppercase tracking-wider text-[11px] border-b text-center text-[#cbd5e1]"
                 style={{
-                  background: 'rgba(255, 255, 255, 0.025)',
-                  borderColor: 'rgba(255, 255, 255, 0.07)',
+                  background: 'rgba(255, 255, 255, 0.01)',
+                  borderColor: 'rgba(255, 255, 255, 0.05)',
                 }}
               >
-                <th className="py-3 px-2 border-r border-white/[0.06] w-12 text-center text-[#94a3b8]">
+                <th className="py-3 px-2 border-r border-white/[0.04] w-12 text-center text-[#94a3b8]">
                   Sl No
                 </th>
-                <th className="py-3 px-3 sm:px-4 border-r border-white/[0.06] text-left text-[#cbd5e1]">
+                <th className="py-3 px-3 sm:px-4 border-r border-white/[0.04] text-left text-[#cbd5e1]">
                   Email ID
                 </th>
-                <th className="py-3 px-3 sm:px-4 border-r border-white/[0.06] text-center text-[#cbd5e1]">
+                <th className="py-3 px-3 sm:px-4 border-r border-white/[0.04] text-center text-[#cbd5e1]">
                   Gemini Time Limit
                 </th>
-                <th className="py-3 px-3 sm:px-4 border-r border-white/[0.06] text-center text-[#cbd5e1]">
+                <th className="py-3 px-3 sm:px-4 border-r border-white/[0.04] text-center text-[#cbd5e1]">
                   Cloaud Time Limit
                 </th>
-                <th className="py-3 px-3 sm:px-4 border-r border-white/[0.06] text-center text-[#cbd5e1]">
+                <th className="py-3 px-3 sm:px-4 border-r border-white/[0.04] text-center text-[#cbd5e1]">
                   Real Time Limit Of Gemini
                 </th>
-                <th className="py-3 px-3 sm:px-4 border-r border-white/[0.06] text-center text-[#cbd5e1]">
+                <th className="py-3 px-3 sm:px-4 text-center text-[#cbd5e1]">
                   Real Time Limit Of Cloaud
-                </th>
-                <th className="py-3 px-2 w-12 text-center text-[#94a3b8]">
-                  Edit
                 </th>
               </tr>
             </thead>
@@ -173,15 +180,19 @@ export default function SpreadsheetTable({
                 return (
                   <tr
                     key={t.id}
-                    className="border-b border-white/[0.04] hover:bg-white/[0.035] transition-colors group"
+                    className="border-b border-white/[0.03] hover:bg-white/[0.03] transition-colors group"
                   >
                     {/* Sl No */}
-                    <td className="py-3 px-2 text-center font-medium text-[#94a3b8] border-r border-white/[0.06] text-xs">
+                    <td className="py-3 px-2 text-center font-medium text-[#94a3b8] border-r border-white/[0.04] text-xs">
                       {index + 1}
                     </td>
 
-                    {/* Email ID */}
-                    <td className="py-3 px-3 sm:px-4 font-medium text-left text-[#f1f5f9] truncate max-w-[220px] border-r border-white/[0.06]">
+                    {/* Email ID (Clickable to Edit) */}
+                    <td
+                      onClick={() => setEditingTracker(t)}
+                      title="Click to edit account"
+                      className="py-3 px-3 sm:px-4 font-medium text-left text-[#f1f5f9] truncate max-w-[220px] border-r border-white/[0.04] cursor-pointer hover:text-white transition-colors"
+                    >
                       {t.label}
                     </td>
 
@@ -189,11 +200,11 @@ export default function SpreadsheetTable({
                     <td
                       onClick={() => setEditingTracker(t)}
                       title="Click to edit Gemini limit"
-                      className="py-3 px-3 sm:px-4 text-center cursor-pointer border-r border-white/[0.06] transition-colors hover:text-[#ffffff]"
+                      className="py-3 px-3 sm:px-4 text-center cursor-pointer border-r border-white/[0.04] transition-colors hover:text-[#f8fafc]"
                     >
                       {isGeminiAvailable ? (
-                        <span className="font-semibold text-[#f1f5f9] inline-flex items-center gap-1.5">
-                          <span className="w-1.5 h-1.5 rounded-full bg-[#f1f5f9] opacity-80" />
+                        <span className="font-medium text-[#f1f5f9] inline-flex items-center gap-1.5">
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#cbd5e1] opacity-90 shadow-sm" />
                           Available
                         </span>
                       ) : (
@@ -207,11 +218,11 @@ export default function SpreadsheetTable({
                     <td
                       onClick={() => setEditingTracker(t)}
                       title="Click to edit Claude limit"
-                      className="py-3 px-3 sm:px-4 text-center cursor-pointer border-r border-white/[0.06] transition-colors hover:text-[#ffffff]"
+                      className="py-3 px-3 sm:px-4 text-center cursor-pointer border-r border-white/[0.04] transition-colors hover:text-[#f8fafc]"
                     >
                       {isClaudeAvailable ? (
-                        <span className="font-semibold text-[#f1f5f9] inline-flex items-center gap-1.5">
-                          <span className="w-1.5 h-1.5 rounded-full bg-[#f1f5f9] opacity-80" />
+                        <span className="font-medium text-[#f1f5f9] inline-flex items-center gap-1.5">
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#cbd5e1] opacity-90 shadow-sm" />
                           Available
                         </span>
                       ) : (
@@ -223,7 +234,7 @@ export default function SpreadsheetTable({
 
                     {/* Real Time Gemini Countdown */}
                     <td
-                      className="py-3 px-3 sm:px-4 text-center font-semibold text-[#f8fafc] border-r border-white/[0.06]"
+                      className="py-3 px-3 sm:px-4 text-center font-medium text-[#f1f5f9] border-r border-white/[0.04]"
                       style={{
                         fontFamily: "'SF Mono', 'Cascadia Code', 'Fira Code', 'JetBrains Mono', 'Consolas', monospace",
                         fontSize: '0.78rem',
@@ -239,7 +250,7 @@ export default function SpreadsheetTable({
 
                     {/* Real Time Claude Countdown */}
                     <td
-                      className="py-3 px-3 sm:px-4 text-center font-semibold text-[#f8fafc] border-r border-white/[0.06]"
+                      className="py-3 px-3 sm:px-4 text-center font-medium text-[#f1f5f9]"
                       style={{
                         fontFamily: "'SF Mono', 'Cascadia Code', 'Fira Code', 'JetBrains Mono', 'Consolas', monospace",
                         fontSize: '0.78rem',
@@ -252,17 +263,6 @@ export default function SpreadsheetTable({
                         claudeRemaining.text
                       )}
                     </td>
-
-                    {/* Edit Action */}
-                    <td className="py-3 px-2 text-center">
-                      <button
-                        onClick={() => setEditingTracker(t)}
-                        className="p-1.5 rounded-lg text-[#94a3b8] hover:text-[#f8fafc] hover:bg-white/10 transition-colors opacity-60 group-hover:opacity-100"
-                        title="Edit account"
-                      >
-                        <Edit2 className="w-3.5 h-3.5" />
-                      </button>
-                    </td>
                   </tr>
                 )
               })}
@@ -272,17 +272,18 @@ export default function SpreadsheetTable({
       </div>
 
       {/* ── In-page Toast Notification ── */}
-      {resetToast && (
+      {refreshToast && (
         <div
           className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-medium text-[#f1f5f9] shadow-2xl transition-all animate-bounce"
           style={{
-            background: 'rgba(20, 22, 35, 0.9)',
-            backdropFilter: 'blur(20px)',
-            border: '1px solid rgba(255, 255, 255, 0.15)',
+            background: 'rgba(10, 14, 26, 0.85)',
+            backdropFilter: 'blur(24px)',
+            border: '1px solid rgba(255, 255, 255, 0.12)',
+            boxShadow: '0 20px 50px rgba(0,0,0,0.7)',
           }}
         >
-          <span className="text-[#94a3b8]">✓</span>
-          <span>Table refreshed to default accounts</span>
+          <span className="text-[#38bdf8]">✓</span>
+          <span>Table refreshed</span>
         </div>
       )}
 

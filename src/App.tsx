@@ -9,7 +9,7 @@ export default function App() {
     addTracker,
     updateTracker,
     deleteTracker,
-    resetToDefault,
+    refreshTrackers,
   } = useTrackers()
 
   return (
@@ -20,7 +20,7 @@ export default function App() {
         onAdd={addTracker}
         onUpdate={updateTracker}
         onDelete={deleteTracker}
-        onReset={resetToDefault}
+        onRefresh={refreshTrackers}
       />
       <Toaster
         position="bottom-right"
