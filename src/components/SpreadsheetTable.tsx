@@ -173,7 +173,7 @@ export default function SpreadsheetTable({
           </button>
 
           <button
-            onClick={() => { if (confirm('Change or enter Supabase Cloud credentials?')) clearSupabaseConfig() }}
+            onClick={() => clearSupabaseConfig()}
             title="Configure Cloud Sync Keys"
             className="p-2 rounded-xl transition-all"
             style={{
