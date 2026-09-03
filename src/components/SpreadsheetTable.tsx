@@ -1,10 +1,20 @@
 import { useState, useEffect } from 'react'
-import { Plus, Edit2, Wifi, WifiOff, Settings2, RotateCcw, Clock } from 'lucide-react'
 import type { LimitTracker, UpdateTracker, NewTracker } from '../types/tracker'
 import { formatLimitDateTime, calculateRemainingTime } from '../utils/dateUtils'
 import EditRowModal from './EditRowModal'
 import AddRowModal from './AddRowModal'
 import { clearSupabaseConfig, isSupabaseConfigured } from '../lib/supabase'
+import {
+  AppleLogoIcon,
+  GoldenGateBadgeIcon,
+  MacAddIcon,
+  MacEditIcon,
+  MacResetIcon,
+  MacSettingsIcon,
+  MacWifiIcon,
+  MacWifiOffIcon,
+  MacClockIcon,
+} from './icons/MacIcons'
 
 interface SpreadsheetTableProps {
   trackers: LimitTracker[]
@@ -68,329 +78,453 @@ export default function SpreadsheetTable({
 
   return (
     <div
-      className="min-h-screen flex flex-col items-center p-4 sm:p-8 select-none"
+      className="min-h-screen flex flex-col items-center justify-start p-3 sm:p-6 md:p-10 select-none relative overflow-x-hidden text-slate-100"
       style={{
         fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif",
-        background: 'linear-gradient(135deg, #0d0d1a 0%, #0a1628 30%, #0f0a1e 60%, #1a0a2e 100%)',
-        minHeight: '100vh',
+        background: 'radial-gradient(circle at 50% 10%, #2a1538 0%, #160d26 40%, #0c0b17 80%, #05050d 100%)',
       }}
     >
-      {/* Ambient background orbs */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+      {/* ── macOS Golden Gate Atmospheric Ambient Glows ── */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        {/* Golden Gate Sunset Amber Glow */}
         <div
-          className="absolute rounded-full blur-3xl opacity-20"
+          className="absolute rounded-full blur-[120px] opacity-35"
           style={{
-            width: '600px', height: '600px',
-            top: '-100px', left: '-100px',
-            background: 'radial-gradient(circle, #6366f1 0%, transparent 70%)',
+            width: '650px',
+            height: '450px',
+            top: '-60px',
+            left: '20%',
+            background: 'radial-gradient(circle, #ff6b35 0%, #e11d48 45%, transparent 70%)',
           }}
         />
+        {/* Pacific Deep Violet Glow */}
         <div
-          className="absolute rounded-full blur-3xl opacity-15"
+          className="absolute rounded-full blur-[140px] opacity-25"
           style={{
-            width: '500px', height: '500px',
-            bottom: '-50px', right: '-50px',
-            background: 'radial-gradient(circle, #8b5cf6 0%, transparent 70%)',
+            width: '700px',
+            height: '500px',
+            bottom: '-80px',
+            right: '5%',
+            background: 'radial-gradient(circle, #7c3aed 0%, #3b82f6 50%, transparent 70%)',
           }}
         />
+        {/* Marin Headlands Cyan Mist Glow */}
         <div
-          className="absolute rounded-full blur-3xl opacity-10"
+          className="absolute rounded-full blur-[100px] opacity-20"
           style={{
-            width: '400px', height: '400px',
-            top: '40%', left: '50%',
+            width: '450px',
+            height: '450px',
+            top: '35%',
+            left: '-100px',
             background: 'radial-gradient(circle, #06b6d4 0%, transparent 70%)',
           }}
         />
       </div>
 
-      {/* Top Toolbar — glass card */}
+      {/* ── macOS 27 Golden Gate Main App Window ── */}
       <div
-        className="relative z-10 w-full max-w-6xl mb-6 flex flex-wrap items-center justify-between gap-3 px-5 py-3.5 rounded-2xl"
+        className="relative z-10 w-full max-w-6xl rounded-2xl overflow-hidden transition-all duration-300"
         style={{
-          background: 'rgba(255,255,255,0.06)',
-          backdropFilter: 'blur(24px)',
-          WebkitBackdropFilter: 'blur(24px)',
-          border: '1px solid rgba(255,255,255,0.12)',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1)',
+          background: 'rgba(18, 16, 28, 0.42)',
+          backdropFilter: 'blur(45px) saturate(210%)',
+          WebkitBackdropFilter: 'blur(45px) saturate(210%)',
+          border: '1px solid rgba(255, 255, 255, 0.14)',
+          boxShadow: '0 30px 80px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.08), inset 0 1px 1px rgba(255, 255, 255, 0.22)',
         }}
       >
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2.5">
-            <span
-              className="w-2.5 h-2.5 rounded-full animate-pulse"
-              style={{ background: 'linear-gradient(135deg, #34d399, #10b981)' }}
-            />
-            <h1
-              className="text-base sm:text-lg font-bold tracking-widest text-white"
-              style={{ letterSpacing: '0.12em', fontWeight: 700 }}
-            >
-              AI LIMITS TRACKER
-            </h1>
-          </div>
-
-          <span
-            className="text-xs px-3 py-1 rounded-full flex items-center gap-1.5 font-medium"
-            style={{
-              background: 'rgba(255,255,255,0.08)',
-              border: '1px solid rgba(255,255,255,0.14)',
-              color: isSupabaseConfigured && isLiveSync ? '#6ee7b7' : isSupabaseConfigured ? '#fcd34d' : '#93c5fd',
-            }}
-          >
-            {isSupabaseConfigured && isLiveSync ? (
-              <><Wifi className="w-3 h-3" /><span>Cloud Live</span></>
-            ) : isSupabaseConfigured ? (
-              <><WifiOff className="w-3 h-3" /><span>Connecting…</span></>
-            ) : (
-              <><Clock className="w-3 h-3" /><span>Local Instant</span></>
-            )}
-          </span>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setIsAddOpen(true)}
-            className="flex items-center gap-1.5 font-semibold text-xs px-4 py-2 rounded-xl text-white transition-all"
-            style={{
-              background: 'linear-gradient(135deg, rgba(52,211,153,0.3), rgba(16,185,129,0.2))',
-              border: '1px solid rgba(52,211,153,0.4)',
-              backdropFilter: 'blur(12px)',
-            }}
-          >
-            <Plus className="w-3.5 h-3.5" /> Add Email
-          </button>
-
-          <button
-            onClick={handleReset}
-            title="Reset to default accounts"
-            className="p-2 rounded-xl transition-all"
-            style={{
-              background: 'rgba(255,255,255,0.06)',
-              border: '1px solid rgba(255,255,255,0.12)',
-              color: 'rgba(255,255,255,0.6)',
-            }}
-          >
-            <RotateCcw className="w-3.5 h-3.5" />
-          </button>
-
-          <button
-            onClick={() => clearSupabaseConfig()}
-            title="Configure Cloud Sync Keys"
-            className="p-2 rounded-xl transition-all"
-            style={{
-              background: 'rgba(255,255,255,0.06)',
-              border: '1px solid rgba(255,255,255,0.12)',
-              color: 'rgba(255,255,255,0.6)',
-            }}
-          >
-            <Settings2 className="w-3.5 h-3.5" />
-          </button>
-        </div>
-      </div>
-
-      {/* Main Table — glass card */}
-      <div
-        className="relative z-10 w-full max-w-6xl overflow-x-auto rounded-2xl"
-        style={{
-          background: 'rgba(255,255,255,0.04)',
-          backdropFilter: 'blur(32px)',
-          WebkitBackdropFilter: 'blur(32px)',
-          border: '1px solid rgba(255,255,255,0.10)',
-          boxShadow: '0 24px 64px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08)',
-        }}
-      >
-        <table
-          className="w-full border-collapse text-xs sm:text-sm"
-          style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif" }}
-        >
-          {/* Header */}
-          <thead>
-            <tr
-              style={{
-                background: 'linear-gradient(135deg, rgba(220,38,38,0.55) 0%, rgba(185,28,28,0.45) 100%)',
-                borderBottom: '1px solid rgba(255,255,255,0.12)',
-              }}
-            >
-              {['Sl No', 'Email ID', 'Gemini Time Limit', 'Cloaud Time Limit', 'Real Time Limit Of Gemini', 'Real Time Limit Of Cloaud', ''].map((col, i) => (
-                <th
-                  key={i}
-                  className="py-4 px-3 text-center font-semibold text-white tracking-wide"
-                  style={{
-                    fontSize: i === 0 ? '0.7rem' : '0.75rem',
-                    letterSpacing: '0.07em',
-                    borderRight: i < 6 ? '1px solid rgba(255,255,255,0.10)' : undefined,
-                    width: i === 0 ? '52px' : i === 6 ? '48px' : undefined,
-                  }}
-                >
-                  {col}
-                </th>
-              ))}
-            </tr>
-          </thead>
-
-          {/* Rows */}
-          <tbody>
-            {trackers.map((t, index) => {
-              const geminiRemaining = calculateRemainingTime(t.gemini_status, t.gemini_reset_at, nowMs)
-              const claudeRemaining = calculateRemainingTime(t.claude_status, t.claude_reset_at, nowMs)
-              const isGeminiAvailable = t.gemini_status === 'available'
-              const isClaudeAvailable = t.claude_status === 'available'
-              const isEven = index % 2 === 0
-
-              const rowBg = isEven
-                ? 'rgba(255,255,255,0.03)'
-                : 'rgba(255,255,255,0.015)'
-
-              const borderStyle = '1px solid rgba(255,255,255,0.07)'
-
-              return (
-                <tr
-                  key={t.id}
-                  className="transition-all duration-150 group"
-                  style={{
-                    background: rowBg,
-                    borderBottom: '1px solid rgba(255,255,255,0.06)',
-                  }}
-                  onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.07)')}
-                  onMouseLeave={e => (e.currentTarget.style.background = rowBg)}
-                >
-                  {/* Sl No */}
-                  <td
-                    className="py-3 px-2 text-center font-bold"
-                    style={{
-                      borderRight: borderStyle,
-                      background: 'linear-gradient(135deg, rgba(220,38,38,0.35), rgba(185,28,28,0.25))',
-                      color: '#fca5a5',
-                      fontSize: '0.75rem',
-                      letterSpacing: '0.05em',
-                    }}
-                  >
-                    {index + 1}
-                  </td>
-
-                  {/* Email ID */}
-                  <td
-                    className="py-3 px-3 font-medium text-left truncate max-w-[200px]"
-                    style={{
-                      borderRight: borderStyle,
-                      background: 'linear-gradient(135deg, rgba(251,191,36,0.18), rgba(245,158,11,0.10))',
-                      color: '#fde68a',
-                      fontWeight: 500,
-                    }}
-                  >
-                    {t.label}
-                  </td>
-
-                  {/* Gemini Time Limit */}
-                  <td
-                    onClick={() => setEditingTracker(t)}
-                    title="Click to update Gemini status"
-                    className="py-3 px-3 text-center font-semibold cursor-pointer transition-all"
-                    style={{
-                      borderRight: borderStyle,
-                      background: isGeminiAvailable
-                        ? 'linear-gradient(135deg, rgba(16,185,129,0.30), rgba(5,150,105,0.20))'
-                        : 'linear-gradient(135deg, rgba(251,191,36,0.25), rgba(245,158,11,0.15))',
-                      color: isGeminiAvailable ? '#6ee7b7' : '#fde68a',
-                      fontSize: '0.72rem',
-                    }}
-                  >
-                    {isGeminiAvailable ? '✦ Available' : formatLimitDateTime(t.gemini_reset_at)}
-                  </td>
-
-                  {/* Claude Time Limit */}
-                  <td
-                    onClick={() => setEditingTracker(t)}
-                    title="Click to update Claude status"
-                    className="py-3 px-3 text-center font-semibold cursor-pointer transition-all"
-                    style={{
-                      borderRight: borderStyle,
-                      background: isClaudeAvailable
-                        ? 'linear-gradient(135deg, rgba(16,185,129,0.30), rgba(5,150,105,0.20))'
-                        : 'linear-gradient(135deg, rgba(251,191,36,0.25), rgba(245,158,11,0.15))',
-                      color: isClaudeAvailable ? '#6ee7b7' : '#fde68a',
-                      fontSize: '0.72rem',
-                    }}
-                  >
-                    {isClaudeAvailable ? '✦ Available' : formatLimitDateTime(t.claude_reset_at)}
-                  </td>
-
-                  {/* Real Time Limit Of Gemini */}
-                  <td
-                    className="py-3 px-3 text-center font-bold"
-                    style={{
-                      borderRight: borderStyle,
-                      background: 'linear-gradient(135deg, rgba(251,191,36,0.15), rgba(245,158,11,0.08))',
-                      color: geminiRemaining.text === '-' ? 'rgba(255,255,255,0.3)' : '#fcd34d',
-                      fontFamily: "'SF Mono', 'Cascadia Code', 'Fira Code', 'JetBrains Mono', 'Consolas', monospace",
-                      fontSize: '0.75rem',
-                      letterSpacing: '0.05em',
-                    }}
-                  >
-                    {geminiRemaining.text}
-                  </td>
-
-                  {/* Real Time Limit Of Claude */}
-                  <td
-                    className="py-3 px-3 text-center font-bold"
-                    style={{
-                      borderRight: borderStyle,
-                      background: 'linear-gradient(135deg, rgba(251,191,36,0.15), rgba(245,158,11,0.08))',
-                      color: claudeRemaining.text === '-' ? 'rgba(255,255,255,0.3)' : '#fcd34d',
-                      fontFamily: "'SF Mono', 'Cascadia Code', 'Fira Code', 'JetBrains Mono', 'Consolas', monospace",
-                      fontSize: '0.75rem',
-                      letterSpacing: '0.05em',
-                    }}
-                  >
-                    {claudeRemaining.text}
-                  </td>
-
-                  {/* Edit */}
-                  <td className="py-3 px-2 text-center">
-                    <button
-                      onClick={() => setEditingTracker(t)}
-                      className="p-1.5 rounded-lg transition-all opacity-40 group-hover:opacity-100"
-                      title="Edit this account"
-                      style={{
-                        background: 'rgba(255,255,255,0.08)',
-                        border: '1px solid rgba(255,255,255,0.12)',
-                        color: 'rgba(255,255,255,0.9)',
-                      }}
-                    >
-                      <Edit2 className="w-3 h-3" />
-                    </button>
-                  </td>
-                </tr>
-              )
-            })}
-          </tbody>
-        </table>
-      </div>
-
-      {/* In-page toast — no browser popup */}
-      {resetToast && (
+        {/* ── macOS Window Chrome / Titlebar ── */}
         <div
-          className="fixed bottom-6 left-1/2 z-50 flex items-center gap-2 px-5 py-3 rounded-2xl text-sm font-medium text-white transition-all"
+          className="px-4 sm:px-6 py-3.5 flex items-center justify-between border-b"
           style={{
-            transform: 'translateX(-50%)',
-            background: 'rgba(16,185,129,0.25)',
-            backdropFilter: 'blur(24px)',
-            WebkitBackdropFilter: 'blur(24px)',
-            border: '1px solid rgba(52,211,153,0.35)',
-            boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
-            fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif",
+            background: 'rgba(255, 255, 255, 0.035)',
+            borderColor: 'rgba(255, 255, 255, 0.08)',
           }}
         >
-          <span style={{ color: '#6ee7b7' }}>✓</span>
-          Table refreshed to default accounts
+          {/* Traffic Lights + App Title */}
+          <div className="flex items-center gap-4">
+            {/* macOS Window Traffic Lights */}
+            <div className="flex items-center gap-2">
+              <span
+                className="w-3 h-3 rounded-full cursor-pointer transition-transform hover:scale-110"
+                style={{
+                  background: '#ff5f56',
+                  boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.4), 0 1px 2px rgba(0,0,0,0.3)',
+                  border: '0.5px solid rgba(0,0,0,0.2)',
+                }}
+                title="Close"
+              />
+              <span
+                className="w-3 h-3 rounded-full cursor-pointer transition-transform hover:scale-110"
+                style={{
+                  background: '#ffbd2e',
+                  boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.4), 0 1px 2px rgba(0,0,0,0.3)',
+                  border: '0.5px solid rgba(0,0,0,0.2)',
+                }}
+                title="Minimize"
+              />
+              <span
+                className="w-3 h-3 rounded-full cursor-pointer transition-transform hover:scale-110"
+                style={{
+                  background: '#27c93f',
+                  boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.4), 0 1px 2px rgba(0,0,0,0.3)',
+                  border: '0.5px solid rgba(0,0,0,0.2)',
+                }}
+                title="Zoom"
+              />
+            </div>
+
+            {/* Title with Golden Gate Badge */}
+            <div className="flex items-center gap-2.5 ml-2">
+              <GoldenGateBadgeIcon size={24} />
+              <div className="flex items-center gap-1.5">
+                <AppleLogoIcon size={13} className="text-white/80" />
+                <h1 className="text-xs sm:text-sm font-semibold tracking-wide text-white/95">
+                  AI Limits Tracker <span className="text-white/40 font-normal ml-1">macOS Golden Gate</span>
+                </h1>
+              </div>
+            </div>
+          </div>
+
+          {/* Sync Status Badge + Actions */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Sync Pill */}
+            <div
+              className="flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full font-medium transition-all"
+              style={{
+                background: 'rgba(255, 255, 255, 0.06)',
+                border: '1px solid rgba(255, 255, 255, 0.12)',
+              }}
+            >
+              {isSupabaseConfigured && isLiveSync ? (
+                <>
+                  <MacWifiIcon size={14} />
+                  <span className="text-cyan-300 text-[11px] font-medium">Live Cloud</span>
+                </>
+              ) : isSupabaseConfigured ? (
+                <>
+                  <MacWifiOffIcon size={14} />
+                  <span className="text-amber-300 text-[11px] font-medium">Connecting</span>
+                </>
+              ) : (
+                <>
+                  <MacClockIcon size={14} />
+                  <span className="text-purple-300 text-[11px] font-medium">Local Fast</span>
+                </>
+              )}
+            </div>
+
+            {/* Add Email Button */}
+            <button
+              onClick={() => setIsAddOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white transition-all duration-150 hover:brightness-110 active:scale-95"
+              style={{
+                background: 'linear-gradient(135deg, rgba(52, 211, 153, 0.28), rgba(16, 185, 129, 0.16))',
+                border: '1px solid rgba(52, 211, 153, 0.4)',
+                boxShadow: '0 2px 8px rgba(16, 185, 129, 0.15)',
+              }}
+            >
+              <MacAddIcon size={15} />
+              <span className="hidden sm:inline">Add Email</span>
+            </button>
+
+            {/* Reset Button */}
+            <button
+              onClick={handleReset}
+              title="Refresh / reset table"
+              className="p-1.5 rounded-lg transition-all duration-150 hover:brightness-125 active:scale-95"
+              style={{
+                background: 'rgba(255, 255, 255, 0.06)',
+                border: '1px solid rgba(255, 255, 255, 0.12)',
+              }}
+            >
+              <MacResetIcon size={16} />
+            </button>
+
+            {/* Cloud Config Settings Button */}
+            <button
+              onClick={() => clearSupabaseConfig()}
+              title="Configure Cloud Sync Keys"
+              className="p-1.5 rounded-lg transition-all duration-150 hover:brightness-125 active:scale-95"
+              style={{
+                background: 'rgba(255, 255, 255, 0.06)',
+                border: '1px solid rgba(255, 255, 255, 0.12)',
+              }}
+            >
+              <MacSettingsIcon size={16} />
+            </button>
+          </div>
+        </div>
+
+        {/* ── Transparent Glass Table Container ── */}
+        <div className="overflow-x-auto p-2 sm:p-4">
+          <table
+            className="w-full border-separate border-spacing-y-1.5 text-xs sm:text-sm"
+            style={{
+              fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif",
+            }}
+          >
+            {/* Table Header with Glassmorphism */}
+            <thead>
+              <tr className="text-white/80 font-semibold tracking-wider text-[11px] uppercase">
+                <th
+                  className="py-2.5 px-2 text-center rounded-l-xl"
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(244, 63, 94, 0.28), rgba(225, 29, 72, 0.18))',
+                    border: '1px solid rgba(244, 63, 94, 0.35)',
+                    borderRight: 'none',
+                    width: '46px',
+                  }}
+                >
+                  Sl No
+                </th>
+                <th
+                  className="py-2.5 px-3 text-left"
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.045)',
+                    borderTop: '1px solid rgba(255, 255, 255, 0.10)',
+                    borderBottom: '1px solid rgba(255, 255, 255, 0.10)',
+                  }}
+                >
+                  Email ID
+                </th>
+                <th
+                  className="py-2.5 px-3 text-center"
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.045)',
+                    borderTop: '1px solid rgba(255, 255, 255, 0.10)',
+                    borderBottom: '1px solid rgba(255, 255, 255, 0.10)',
+                  }}
+                >
+                  Gemini Time Limit
+                </th>
+                <th
+                  className="py-2.5 px-3 text-center"
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.045)',
+                    borderTop: '1px solid rgba(255, 255, 255, 0.10)',
+                    borderBottom: '1px solid rgba(255, 255, 255, 0.10)',
+                  }}
+                >
+                  Cloaud Time Limit
+                </th>
+                <th
+                  className="py-2.5 px-3 text-center"
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.045)',
+                    borderTop: '1px solid rgba(255, 255, 255, 0.10)',
+                    borderBottom: '1px solid rgba(255, 255, 255, 0.10)',
+                  }}
+                >
+                  Real Time Limit <span className="text-white/40">Of Gemini</span>
+                </th>
+                <th
+                  className="py-2.5 px-3 text-center"
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.045)',
+                    borderTop: '1px solid rgba(255, 255, 255, 0.10)',
+                    borderBottom: '1px solid rgba(255, 255, 255, 0.10)',
+                  }}
+                >
+                  Real Time Limit <span className="text-white/40">Of Cloaud</span>
+                </th>
+                <th
+                  className="py-2.5 px-2 text-center rounded-r-xl"
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.045)',
+                    border: '1px solid rgba(255, 255, 255, 0.10)',
+                    borderLeft: 'none',
+                    width: '44px',
+                  }}
+                >
+                  Action
+                </th>
+              </tr>
+            </thead>
+
+            {/* Table Rows — Highly Transparent Glass Cards */}
+            <tbody>
+              {trackers.map((t, index) => {
+                const geminiRemaining = calculateRemainingTime(t.gemini_status, t.gemini_reset_at, nowMs)
+                const claudeRemaining = calculateRemainingTime(t.claude_status, t.claude_reset_at, nowMs)
+                const isGeminiAvailable = t.gemini_status === 'available'
+                const isClaudeAvailable = t.claude_status === 'available'
+
+                return (
+                  <tr
+                    key={t.id}
+                    className="group transition-all duration-200"
+                  >
+                    {/* Column 0: Sl No — Golden Gate Crimson Squircle */}
+                    <td
+                      className="py-2.5 px-2 text-center font-bold rounded-l-xl text-xs"
+                      style={{
+                        background: 'linear-gradient(135deg, rgba(225, 29, 72, 0.22), rgba(190, 18, 60, 0.14))',
+                        border: '1px solid rgba(244, 63, 94, 0.28)',
+                        borderRight: 'none',
+                        color: '#fda4af',
+                        letterSpacing: '0.04em',
+                      }}
+                    >
+                      {index + 1}
+                    </td>
+
+                    {/* Column 1: Email ID — Transparent Amber Tint */}
+                    <td
+                      className="py-2.5 px-3 font-medium text-left truncate max-w-[210px]"
+                      style={{
+                        background: 'linear-gradient(135deg, rgba(251, 191, 36, 0.08), rgba(245, 158, 11, 0.04))',
+                        borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+                        borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+                        color: '#fef3c7',
+                      }}
+                    >
+                      {t.label}
+                    </td>
+
+                    {/* Column 2: Gemini Time Limit — Emerald Crystal / Amber Glow */}
+                    <td
+                      onClick={() => setEditingTracker(t)}
+                      title="Click to edit Gemini limit"
+                      className="py-2.5 px-3 text-center font-semibold cursor-pointer transition-all duration-150 hover:brightness-125"
+                      style={{
+                        background: isGeminiAvailable
+                          ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.18), rgba(5, 150, 105, 0.10))'
+                          : 'linear-gradient(135deg, rgba(245, 158, 11, 0.16), rgba(217, 119, 6, 0.08))',
+                        borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+                        borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+                        color: isGeminiAvailable ? '#34d399' : '#fde68a',
+                        fontSize: '0.74rem',
+                      }}
+                    >
+                      {isGeminiAvailable ? (
+                        <span className="inline-flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                          Available
+                        </span>
+                      ) : (
+                        formatLimitDateTime(t.gemini_reset_at)
+                      )}
+                    </td>
+
+                    {/* Column 3: Claude Time Limit — Emerald Crystal / Amber Glow */}
+                    <td
+                      onClick={() => setEditingTracker(t)}
+                      title="Click to edit Claude limit"
+                      className="py-2.5 px-3 text-center font-semibold cursor-pointer transition-all duration-150 hover:brightness-125"
+                      style={{
+                        background: isClaudeAvailable
+                          ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.18), rgba(5, 150, 105, 0.10))'
+                          : 'linear-gradient(135deg, rgba(245, 158, 11, 0.16), rgba(217, 119, 6, 0.08))',
+                        borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+                        borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+                        color: isClaudeAvailable ? '#34d399' : '#fde68a',
+                        fontSize: '0.74rem',
+                      }}
+                    >
+                      {isClaudeAvailable ? (
+                        <span className="inline-flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                          Available
+                        </span>
+                      ) : (
+                        formatLimitDateTime(t.claude_reset_at)
+                      )}
+                    </td>
+
+                    {/* Column 4: Real Time Gemini Countdown — SF Mono Glowing Counter */}
+                    <td
+                      className="py-2.5 px-3 text-center font-bold"
+                      style={{
+                        background: 'linear-gradient(135deg, rgba(251, 191, 36, 0.09), rgba(245, 158, 11, 0.03))',
+                        borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+                        borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+                        color: geminiRemaining.text === '-' ? 'rgba(255, 255, 255, 0.25)' : '#fef08a',
+                        fontFamily: "'SF Mono', 'Cascadia Code', 'Fira Code', 'JetBrains Mono', 'Consolas', monospace",
+                        fontSize: '0.76rem',
+                        letterSpacing: '0.04em',
+                      }}
+                    >
+                      {geminiRemaining.text}
+                    </td>
+
+                    {/* Column 5: Real Time Claude Countdown — SF Mono Glowing Counter */}
+                    <td
+                      className="py-2.5 px-3 text-center font-bold"
+                      style={{
+                        background: 'linear-gradient(135deg, rgba(251, 191, 36, 0.09), rgba(245, 158, 11, 0.03))',
+                        borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+                        borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+                        color: claudeRemaining.text === '-' ? 'rgba(255, 255, 255, 0.25)' : '#fef08a',
+                        fontFamily: "'SF Mono', 'Cascadia Code', 'Fira Code', 'JetBrains Mono', 'Consolas', monospace",
+                        fontSize: '0.76rem',
+                        letterSpacing: '0.04em',
+                      }}
+                    >
+                      {claudeRemaining.text}
+                    </td>
+
+                    {/* Column 6: Edit Action */}
+                    <td
+                      className="py-2.5 px-2 text-center rounded-r-xl"
+                      style={{
+                        background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02))',
+                        border: '1px solid rgba(255, 255, 255, 0.08)',
+                        borderLeft: 'none',
+                      }}
+                    >
+                      <button
+                        onClick={() => setEditingTracker(t)}
+                        className="p-1 rounded-lg transition-all duration-150 opacity-60 hover:opacity-100 hover:scale-105 active:scale-95"
+                        title="Edit account details"
+                      >
+                        <MacEditIcon size={16} />
+                      </button>
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        {/* ── Window Footer / Status Bar ── */}
+        <div
+          className="px-4 sm:px-6 py-2.5 flex flex-wrap items-center justify-between text-[11px] border-t"
+          style={{
+            background: 'rgba(255, 255, 255, 0.02)',
+            borderColor: 'rgba(255, 255, 255, 0.06)',
+            color: 'rgba(255, 255, 255, 0.45)',
+          }}
+        >
+          <div className="flex items-center gap-2">
+            <span>💡 Click any limit cell or icon to update times</span>
+          </div>
+          <div className="flex items-center gap-1.5" style={{ fontFamily: "'SF Mono', monospace" }}>
+            <span>Live Ticker</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping inline-block" />
+          </div>
+        </div>
+      </div>
+
+      {/* ── In-page Toast Notification (No Browser Popup) ── */}
+      {resetToast && (
+        <div
+          className="fixed bottom-6 left-1/2 z-50 flex items-center gap-2.5 px-5 py-3 rounded-2xl text-xs font-medium text-white transition-all shadow-2xl animate-bounce"
+          style={{
+            transform: 'translateX(-50%)',
+            background: 'rgba(18, 16, 28, 0.85)',
+            backdropFilter: 'blur(30px)',
+            WebkitBackdropFilter: 'blur(30px)',
+            border: '1px solid rgba(52, 211, 153, 0.5)',
+            boxShadow: '0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(16, 185, 129, 0.25)',
+          }}
+        >
+          <MacResetIcon size={16} />
+          <span>Table refreshed to default accounts</span>
         </div>
       )}
 
-      {/* Footer */}
-      <div className="relative z-10 w-full max-w-6xl mt-4 flex flex-wrap items-center justify-between text-xs px-1" style={{ color: 'rgba(255,255,255,0.35)' }}>
-        <p>💡 Click any row or <Edit2 className="w-3 h-3 inline mx-0.5" /> to update Available / Limited times.</p>
-        <p style={{ fontFamily: "'SF Mono', monospace" }}>Countdowns update every second</p>
-      </div>
-
+      {/* ── Modals ── */}
       {editingTracker && (
         <EditRowModal
           tracker={editingTracker}
