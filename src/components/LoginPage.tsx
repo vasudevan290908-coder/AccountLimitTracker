@@ -1,24 +1,39 @@
 import { useState } from 'react'
-import { Zap, Eye, EyeOff, AlertCircle } from 'lucide-react'
-import { signIn } from '../hooks/useAuth'
+import { Zap, Eye, EyeOff, AlertCircle, Settings2 } from 'lucide-react'
+import { signIn, signUp } from '../hooks/useAuth'
+import { clearSupabaseConfig } from '../lib/supabase'
 import toast from 'react-hot-toast'
 
 export default function LoginPage() {
+  const [isSignUp, setIsSignUp] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPass, setShowPass] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [successMsg, setSuccessMsg] = useState<string | null>(null)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
+    setSuccessMsg(null)
     setLoading(true)
+
     try {
-      await signIn(email, password)
-      toast.success('Signed in!')
+      if (isSignUp) {
+        const data = await signUp(email, password)
+        if (data.session) {
+          toast.success('Account created and signed in!')
+        } else {
+          setSuccessMsg('Account created! If email confirmation is enabled, check your inbox to confirm.')
+          toast.success('Account created!')
+        }
+      } else {
+        await signIn(email, password)
+        toast.success('Signed in!')
+      }
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Sign-in failed'
+      const msg = err instanceof Error ? err.message : 'Authentication failed'
       setError(msg)
     } finally {
       setLoading(false)
@@ -44,10 +59,41 @@ export default function LoginPage() {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="card p-6 space-y-4">
+          <div className="flex border-b border-gray-800 pb-3 mb-2">
+            <button
+              type="button"
+              onClick={() => { setIsSignUp(false); setError(null); setSuccessMsg(null) }}
+              className={`flex-1 text-center py-1.5 text-sm font-medium border-b-2 -mb-3 transition-colors ${
+                !isSignUp
+                  ? 'border-sky-500 text-sky-400 font-semibold'
+                  : 'border-transparent text-gray-400 hover:text-gray-200'
+              }`}
+            >
+              Sign In
+            </button>
+            <button
+              type="button"
+              onClick={() => { setIsSignUp(true); setError(null); setSuccessMsg(null) }}
+              className={`flex-1 text-center py-1.5 text-sm font-medium border-b-2 -mb-3 transition-colors ${
+                isSignUp
+                  ? 'border-sky-500 text-sky-400 font-semibold'
+                  : 'border-transparent text-gray-400 hover:text-gray-200'
+              }`}
+            >
+              Sign Up
+            </button>
+          </div>
+
           {error && (
             <div className="flex items-start gap-2 rounded-lg bg-red-900/30 border border-red-700/50 px-3 py-2.5 text-sm text-red-300">
               <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
               <span>{error}</span>
+            </div>
+          )}
+
+          {successMsg && (
+            <div className="rounded-lg bg-emerald-900/30 border border-emerald-700/50 px-3 py-2.5 text-sm text-emerald-300">
+              {successMsg}
             </div>
           )}
 
@@ -80,7 +126,8 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                autoComplete="current-password"
+                minLength={6}
+                autoComplete={isSignUp ? 'new-password' : 'current-password'}
               />
               <button
                 type="button"
@@ -97,17 +144,30 @@ export default function LoginPage() {
             {loading ? (
               <>
                 <span className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
-                Signing in…
+                {isSignUp ? 'Creating account…' : 'Signing in…'}
               </>
+            ) : isSignUp ? (
+              'Create Account'
             ) : (
               'Sign in'
             )}
           </button>
         </form>
 
-        <p className="mt-4 text-center text-xs text-gray-600">
-          Single-user app · Create your account via the Supabase Auth dashboard
-        </p>
+        <div className="mt-4 flex items-center justify-between text-xs text-gray-600 px-1">
+          <span>Single-user dashboard</span>
+          <button
+            onClick={() => {
+              if (confirm('Change or reset Supabase keys?')) {
+                clearSupabaseConfig()
+              }
+            }}
+            className="flex items-center gap-1 text-gray-500 hover:text-sky-400 transition-colors"
+          >
+            <Settings2 className="w-3.5 h-3.5" />
+            Edit Supabase keys
+          </button>
+        </div>
       </div>
     </div>
   )

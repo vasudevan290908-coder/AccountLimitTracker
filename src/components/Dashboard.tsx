@@ -6,10 +6,12 @@ import {
   Zap,
   Wifi,
   WifiOff,
+  Settings2,
 } from 'lucide-react'
 import type { User } from '@supabase/supabase-js'
 import { useTrackers } from '../hooks/useTrackers'
 import { signOut } from '../hooks/useAuth'
+import { clearSupabaseConfig } from '../lib/supabase'
 import type { UpdateTracker } from '../types/tracker'
 import TrackerRow from './TrackerRow'
 import AddTrackerModal from './AddTrackerModal'
@@ -100,6 +102,17 @@ export default function Dashboard({ user }: DashboardProps) {
             >
               <Plus className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Add Account</span>
+            </button>
+            <button
+              onClick={() => {
+                if (confirm('Change or reset Supabase keys?')) {
+                  clearSupabaseConfig()
+                }
+              }}
+              className="btn-ghost text-xs px-2 py-1.5 text-gray-500 hover:text-sky-400"
+              title="Edit Supabase Keys"
+            >
+              <Settings2 className="w-3.5 h-3.5" />
             </button>
             <button
               onClick={handleSignOut}
